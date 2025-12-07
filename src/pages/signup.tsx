@@ -3,8 +3,14 @@ import Input from '../components/input';
 import { Text, LinkText } from '../components/Text';
 import { Heading } from '../components/Heading';
 import { Button } from '../components/Button';
+import { signUp, type SignUpResult } from '../lib/auth';
+import { useNavigate, useOutletContext } from 'react-router';
 
 const Signup = () => {
+
+  const navigate = useNavigate();
+  const { setUser, supabase } = useOutletContext<any>();
+
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -25,7 +31,18 @@ const Signup = () => {
     e.preventDefault();
     // Will be implemented later with Supabase
     console.log('Form submitted:', formData);
+    signUp(supabase, formData.email, formData.password, onSignupSuccess, onSignupError);
   };
+
+  const onSignupSuccess = (data: SignUpResult) => {
+    setUser(data.user);
+    navigate('/onboarding/interests');
+  }
+
+  const onSignupError = (error: Error) => {
+    console.error('Signup error:', error);
+  }
+    
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">

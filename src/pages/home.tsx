@@ -2,6 +2,10 @@ import { useState } from 'react';
 import { Heading } from '../components/Heading';
 import { Text } from '../components/Text';
 import { Button } from '../components/Button';
+import { TopNavigation } from '../components/TopNavigation';
+import { useNavigate, useOutletContext } from 'react-router';
+import { signOut } from '../lib/auth';
+import { searchProductsByTags } from '../lib/search';
 
 type FlashcardPack = {
     id: string;
@@ -19,6 +23,25 @@ type Section = {
 };
 
 const Home = () => {
+
+    const [sidebarOpen, setSidebarOpen] = useState(false);
+    const navigate = useNavigate();
+    const { supabase } = useOutletContext<any>();
+
+    const handleSearch = (query: string) => {
+        console.log('Searching for:', query);
+        searchProductsByTags(supabase, query);
+
+    };
+
+    const handleSignOut = async () => {
+        try {
+            await signOut(supabase, () => navigate('/login'), (error) => console.error('Error signing out:', error));
+        } catch (error) {
+            console.error('Error signing out:', error);
+        }
+    };
+
     // Hardcoded sections with flashcard packs
     const sections: Section[] = [
         {
@@ -113,8 +136,6 @@ const Home = () => {
         }
     ];
 
-    const [sidebarOpen, setSidebarOpen] = useState(false);
-
     return (
         <div className="flex h-screen bg-gray-50">
             {/* Sidebar */}
@@ -122,7 +143,6 @@ const Home = () => {
                 <div className="p-4">
                     <Heading as="h2" variant="lg" className="text-gray-800">Smartr</Heading>
                     <div className="mt-8 space-y-1">
-                        {/* Sidebar navigation items will go here */}
                         <button className="w-full text-left px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md">
                             Home
                         </button>
@@ -148,44 +168,19 @@ const Home = () => {
 
             {/* Main Content */}
             <div className="flex-1 flex flex-col overflow-hidden">
-                {/* Top Navigation */}
-                <header className="bg-white shadow-sm">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
-                        <button
-                            className="md:hidden p-2 rounded-md text-gray-500 hover:text-gray-600 hover:bg-gray-100"
-                            onClick={() => setSidebarOpen(!sidebarOpen)}
-                        >
-                            <span className="sr-only">Open sidebar</span>
-                            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                            </svg>
-                        </button>
-                        <div className="flex-1 md:ml-6">
-                            <div className="max-w-xl">
-                                <div className="relative">
-                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <svg className="h-5 w-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
-                                        </svg>
-                                    </div>
-                                    <input
-                                        className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                                        placeholder="Search flashcard decks..."
-                                        type="search"
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </header>
-
+                <TopNavigation 
+                    onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+                    onSearch={handleSearch}
+                    onSignOut={handleSignOut}
+                    userInitial="U"
+                />
                 {/* Page Content */}
                 <main className="flex-1 overflow-y-auto p-4 sm:p-6">
                     <div className="max-w-7xl mx-auto">
                         {sections.map((section) => (
                             <section key={section.id} className="mb-12">
                                 <div className="flex items-center justify-between mb-4">
-                                    <Heading as="h2" variant="lg">{section.title}</Heading>
+                                    <Heading as="h2" variant="md">{section.title}</Heading>
                                     <button className="text-sm text-blue-600 hover:text-blue-800">
                                         See all
                                     </button>

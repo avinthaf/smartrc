@@ -12,10 +12,8 @@ const Interests = () => {
     'Biology', 'Chemistry', 'Physics', 'Mathematics', 'Computer Science',
     'Psychology', 'Sociology', 'Economics', 'History', 'Literature',
     'Philosophy', 'Political Science', 'Engineering', 'Medicine', 'Law',
-    'Business Administration', 'Accounting', 'Statistics', 'Calculus', 'Linear Algebra',
-    'Organic Chemistry', 'Biochemistry', 'Genetics', 'Neuroscience', 'Anatomy',
-    // 'Web Development', 'Data Science', 'Artificial Intelligence', 'Cybersecurity', 'Machine Learning',
-    // 'Spanish', 'French', 'German', 'Mandarin', 'Japanese'
+  'Accounting', 'Statistics', 'Calculus', 'Linear Algebra',
+    'Organic Chemistry', 'Biochemistry', 'Genetics', 'Neuroscience', 'Anatomy'
   ].sort();
 
   const toggleInterest = (topic: string) => {
@@ -54,7 +52,7 @@ const Interests = () => {
                   key={topic}
                   type="button"
                   onClick={() => toggleInterest(topic)}
-                  className={`px-4 py-3 rounded-lg border ${
+                  className={`px-4 py-3 rounded-lg border h-fit ${
                     selectedInterests.has(topic)
                       ? 'border-blue-500 bg-blue-50 text-blue-700'
                       : 'border-gray-300 hover:border-gray-400 text-gray-700 hover:bg-gray-50'
