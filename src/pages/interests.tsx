@@ -1,27 +1,32 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Heading } from '../components/Heading';
 import { Text } from '../components/Text';
 import { Button } from '../components/Button';
+import { getPrimaryCategories } from '../lib/categories';
+import { useOutletContext } from 'react-router';
 
 const Interests = () => {
+
+  const { supabase } = useOutletContext<any>();
+
   const [selectedInterests, setSelectedInterests] = useState<Set<string>>(new Set());
+  const [interests, setInterests] = useState<any>([]);
 
-  // Hardcoded list of academic topics
-  const topics = [
-    'MCAT', 'LSAT', 'GMAT', 'GRE', 'SAT/ACT',
-    'Biology', 'Chemistry', 'Physics', 'Mathematics', 'Computer Science',
-    'Psychology', 'Sociology', 'Economics', 'History', 'Literature',
-    'Philosophy', 'Political Science', 'Engineering', 'Medicine', 'Law',
-  'Accounting', 'Statistics', 'Calculus', 'Linear Algebra',
-    'Organic Chemistry', 'Biochemistry', 'Genetics', 'Neuroscience', 'Anatomy'
-  ].sort();
+  useEffect(() => {
+    const fetchInterests = async () => {
+      const interests = await getPrimaryCategories(supabase);
+      console.log("Interests", interests);
+      setInterests(interests.map((interest: any) => interest.name));
+    };
+    fetchInterests();
+  }, []);
 
-  const toggleInterest = (topic: string) => {
+  const toggleInterest = (interest: string) => {
     const newSelection = new Set(selectedInterests);
-    if (newSelection.has(topic)) {
-      newSelection.delete(topic);
+    if (newSelection.has(interest)) {
+      newSelection.delete(interest);
     } else {
-      newSelection.add(topic);
+      newSelection.add(interest);
     }
     setSelectedInterests(newSelection);
   };
@@ -47,18 +52,18 @@ const Interests = () => {
         <form onSubmit={handleSubmit}>
           <div className="mt-8">
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-              {topics.map((topic) => (
+              {interests.map((interest: string) => (
                 <button
-                  key={topic}
+                  key={interest}
                   type="button"
-                  onClick={() => toggleInterest(topic)}
+                  onClick={() => toggleInterest(interest)}
                   className={`px-4 py-3 rounded-lg border h-fit ${
-                    selectedInterests.has(topic)
+                    selectedInterests.has(interest)
                       ? 'border-blue-500 bg-blue-50 text-blue-700'
                       : 'border-gray-300 hover:border-gray-400 text-gray-700 hover:bg-gray-50'
                   } transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500`}
                 >
-                  {topic}
+                  {interest}
                 </button>
               ))}
             </div>

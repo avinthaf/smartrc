@@ -12,8 +12,6 @@ const Signup = () => {
   const { setUser, supabase } = useOutletContext<any>();
 
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
     email: '',
     password: '',
     confirmPassword: ''
@@ -42,7 +40,7 @@ const Signup = () => {
   const onSignupError = (error: Error) => {
     console.error('Signup error:', error);
   }
-    
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -60,28 +58,6 @@ const Signup = () => {
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="rounded-md shadow-sm space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <Input
-                name="firstName"
-                type="text"
-                label="First name"
-                autoComplete="given-name"
-                required
-                value={formData.firstName}
-                onChange={handleChange}
-                placeholder="John"
-              />
-              <Input
-                name="lastName"
-                type="text"
-                label="Last name"
-                autoComplete="family-name"
-                required
-                value={formData.lastName}
-                onChange={handleChange}
-                placeholder="Doe"
-              />
-            </div>
             <Input
               name="email"
               type="email"

@@ -3,14 +3,20 @@ import Input from '../components/input';
 import { Text, LinkText } from '../components/Text';
 import { Heading } from '../components/Heading';
 import { Button } from '../components/Button';
+import { signIn } from '../lib/auth';
+import { useOutletContext } from 'react-router';
+import { useNavigate } from 'react-router';
 
 const Login = () => {
+
+    const navigate = useNavigate();
+
     const [formData, setFormData] = useState({
         email: '',
         password: ''
     });
 
-
+    const { supabase } = useOutletContext<any>();
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -22,8 +28,11 @@ const Login = () => {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        // Will be implemented later with Supabase
-        console.log('Form submitted:', formData);
+        signIn(supabase, formData.email, formData.password, () => {
+            navigate("/")
+        }, (error) => {
+            console.error('Error signing in:', error);
+        });
     };
 
     return (
