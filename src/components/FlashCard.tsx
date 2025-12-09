@@ -7,8 +7,8 @@ type FlashCardVariant = 'default' | 'game';
 type FlashCardProps = {
   card: {
     id: string;
-    title: string;
-    description: string;
+    term: string;
+    definition: string;
   };
   onAnswer?: (isCorrect: boolean) => void;
   showAnswerButtons?: boolean;
@@ -75,7 +75,7 @@ export const FlashCard = ({
             isFlipped ? 'opacity-0' : 'opacity-100'
           }`}>
             <Heading as="h2" variant="lg" className="text-center mb-4">
-              {card.title}
+              {card.term}
             </Heading>
             {isGameMode && (
               <div className="w-full max-w-xs mt-4 space-y-2">
@@ -111,7 +111,7 @@ export const FlashCard = ({
             isFlipped ? 'opacity-100' : 'opacity-0'
           }`}>
             <p className="text-gray-700 text-center flex-grow flex items-center justify-center">
-              {card.description}
+              {card.definition}
             </p>
             
             {showAnswerButtons && onAnswer && (

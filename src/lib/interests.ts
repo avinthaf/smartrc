@@ -1,10 +1,10 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-export const getFlashcardDecks = async (client: SupabaseClient<any, "public", "public", any, any>) => {
+export const getInterests = async (client: SupabaseClient<any, "public", "public", any, any>) => {
     const { data: { session } } = await client.auth.getSession();
     const accessToken = session?.access_token
 
-    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/flashcard_decks`, {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/interests`, {
         method: "GET",
         headers: {
             "Content-Type": "application/json",
@@ -13,26 +13,28 @@ export const getFlashcardDecks = async (client: SupabaseClient<any, "public", "p
     });
 
     if (!response.ok) {
-        throw new Error("Failed to get flashcard decks");
+        throw new Error("Failed to get interests");
     }
 
     return response.json();
 }
 
-export const getFlashcardsByDeckId = async (client: SupabaseClient<any, "public", "public", any, any>, deckId: string) => {
+export const createInterests = async (client: SupabaseClient<any, "public", "public", any, any>, interests: { user_id: string, category_id: string }[]) => {
+    
     const { data: { session } } = await client.auth.getSession();
     const accessToken = session?.access_token
 
-    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/flashcard_decks/${deckId}`, {
-        method: "GET",
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/interests`, {
+        method: "POST",
         headers: {
             "Content-Type": "application/json",
             "Authorization": `Bearer ${accessToken}`,
         },
+        body: JSON.stringify(interests),
     });
 
     if (!response.ok) {
-        throw new Error("Failed to get flashcards");
+        throw new Error("Failed to create interests");
     }
 
     return response.json();

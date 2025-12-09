@@ -21,7 +21,7 @@ createRoot(document.getElementById('root')!).render(
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/onboarding/interests" element={<Interests />} />
-          <Route path="/flashcards" element={<Flashcards />} />
+          <Route path="/flashcards/:deckId" element={<Flashcards />} />
           <Route path="/flashcards/make" element={<FlashcardsMaker />} />
           <Route path="/flashcards/game" element={<FlashcardsGame />} />
         </Route>

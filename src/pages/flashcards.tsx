@@ -1,51 +1,48 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router';
+import { useEffect, useState } from 'react';
+import { useNavigate, useOutletContext } from 'react-router';
 import { Heading } from '../components/Heading';
 import { Button } from '../components/Button';
 import { FlashCard } from '../components/FlashCard';
+import { useParams } from 'react-router';
+import { getFlashcardsByDeckId } from '../lib/flashcards';
 
 type Flashcard = {
   id: string;
-  title: string;
-  description: string;
+  term: string;
+  definition: string;
 };
 
-const flashcardData: Flashcard[] = [
-  {
-    id: '1',
-    title: 'Cell Biology',
-    description: 'The study of cell structure and function, and it revolves around the concept that the cell is the fundamental unit of life.'
-  },
-  {
-    id: '2',
-    title: 'Photosynthesis',
-    description: 'The process by which green plants and some other organisms use sunlight to synthesize foods with the help of chlorophyll.'
-  },
-  {
-    id: '3',
-    title: 'Mitochondria',
-    description: 'The powerhouse of the cell, responsible for producing energy through cellular respiration.'
-  },
-  {
-    id: '4',
-    title: 'DNA Replication',
-    description: 'The process by which a double-stranded DNA molecule is copied to produce two identical DNA molecules.'
-  },
-  {
-    id: '5',
-    title: 'Neuron Function',
-    description: 'Neurons transmit information through electrical and chemical signals, forming the basis of the nervous system.'
-  }
-];
 
 type AnswerStatus = 'right' | 'wrong';
 type CardAnswers = Record<string, AnswerStatus>;
 
 const Flashcards = () => {
   const navigate = useNavigate();
+  const { deckId } = useParams();
+  const { supabase } = useOutletContext<any>();
+
+  const [flashcards, setFlashcards] = useState<Flashcard[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   const [answers, setAnswers] = useState<CardAnswers>({});
+  const [isLoading, setIsLoading] = useState(true);
+
+
+  useEffect(() => {
+    if (deckId) {
+      setIsLoading(true);
+      getFlashcardsByDeckId(supabase, deckId)
+        .then((data) => {
+          setFlashcards(data);
+        })
+        .catch((error) => {
+          console.error('Error fetching flashcards:', error);
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
+    }
+  }, [deckId, supabase]);
 
   const handleAnswer = (cardId: string, isCorrect: boolean) => {
     setAnswers(prev => ({
@@ -65,11 +62,16 @@ const Flashcards = () => {
 
   const stats = getAnswerStats();
 
-  const currentCard = flashcardData[currentIndex];
-  const totalCards = flashcardData.length;
+  const currentCard = flashcards[currentIndex];
+  const totalCards = flashcards.length;
+
+    // Reset isFlipped whenever currentIndex changes
+  useEffect(() => {
+    setIsFlipped(false);
+  }, [currentIndex]);
 
   const nextCard = () => {
-    setIsFlipped(false);
+    // Move to next card with wrap-around
     setCurrentIndex((prevIndex) => (prevIndex + 1) % totalCards);
   };
 
@@ -82,12 +84,35 @@ const Flashcards = () => {
     setIsFlipped(!isFlipped);
   };
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading flashcards...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!currentCard) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <p className="text-gray-600">No flashcards found in this deck.</p>
+        </div>
+      </div>
+    );
+  }
+
+
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center p-6">
       <div className="w-full max-w-2xl">
         <div className="text-center mb-6">
           <Heading as="h1" variant="xl" className="mb-6">Flashcards</Heading>
-          
+
           <div className="flex justify-between items-center mb-4">
             <div className="flex items-center space-x-2">
               <span className="px-3 py-1 bg-green-100 text-green-800 text-sm font-medium rounded-full">
@@ -104,6 +129,7 @@ const Flashcards = () => {
         </div>
 
         <FlashCard
+          key={`card-${currentIndex}`}  // This forces a remount when currentIndex changes
           card={currentCard}
           onAnswer={(isCorrect) => handleAnswer(currentCard.id, isCorrect)}
           showAnswerButtons={true}
@@ -126,7 +152,7 @@ const Flashcards = () => {
           >
             {currentIndex === totalCards - 1 ? 'Done' : 'Next'}
           </Button>
-          <Button 
+          <Button
             onClick={() => navigate('/flashcards/game')}
             variant="default"
           >

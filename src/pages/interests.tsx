@@ -4,22 +4,39 @@ import { Text } from '../components/Text';
 import { Button } from '../components/Button';
 import { getPrimaryCategories } from '../lib/categories';
 import { useOutletContext } from 'react-router';
+import { createInterests, getInterests } from '../lib/interests';
+import { useNavigate } from 'react-router';
 
 const Interests = () => {
 
-  const { supabase } = useOutletContext<any>();
+  const { supabase, user } = useOutletContext<any>();
+  const navigate = useNavigate();
 
+  const [loading, setLoading] = useState(true);
   const [selectedInterests, setSelectedInterests] = useState<Set<string>>(new Set());
-  const [interests, setInterests] = useState<any>([]);
+  const [categories, setCategories] = useState<any>([]);
 
   useEffect(() => {
     const fetchInterests = async () => {
-      const interests = await getPrimaryCategories(supabase);
-      console.log("Interests", interests);
-      setInterests(interests.map((interest: any) => interest.name));
+      const interests = await getInterests(supabase);
+      if (interests?.length > 0) {
+        navigate("/");
+      }
     };
+
     fetchInterests();
-  }, []);
+    setLoading(false);
+
+  }, [supabase])
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      const categories = await getPrimaryCategories(supabase);
+      setCategories(categories);
+    };
+    fetchCategories();
+  }, [supabase]);
+  
 
   const toggleInterest = (interest: string) => {
     const newSelection = new Set(selectedInterests);
@@ -31,11 +48,24 @@ const Interests = () => {
     setSelectedInterests(newSelection);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Will be implemented later with actual submission
-    console.log('Selected interests:', Array.from(selectedInterests));
+    const interestsData = Array.from(selectedInterests).map(interestId => ({
+      user_id: user.id,
+      category_id: interestId
+    }));
+
+    try {
+      await createInterests(supabase, interestsData);
+      navigate("/");
+    } catch (error) {
+      console.error("Error creating interests:", error);
+    }
   };
+
+if (loading) {
+  return <div>Loading...</div>;
+}
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -52,18 +82,18 @@ const Interests = () => {
         <form onSubmit={handleSubmit}>
           <div className="mt-8">
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-              {interests.map((interest: string) => (
+              {categories.map((category: any, index: number) => (
                 <button
-                  key={interest}
+                  key={index}
                   type="button"
-                  onClick={() => toggleInterest(interest)}
+                  onClick={() => toggleInterest(category.id)}
                   className={`px-4 py-3 rounded-lg border h-fit ${
-                    selectedInterests.has(interest)
+                    selectedInterests.has(category.id)
                       ? 'border-blue-500 bg-blue-50 text-blue-700'
                       : 'border-gray-300 hover:border-gray-400 text-gray-700 hover:bg-gray-50'
                   } transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500`}
                 >
-                  {interest}
+                  {category.name}
                 </button>
               ))}
             </div>
