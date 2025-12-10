@@ -6,6 +6,7 @@ import { Link, useNavigate, useOutletContext } from 'react-router';
 import { signOut } from '../lib/auth';
 import { searchProductsByTags } from '../lib/search';
 import { getFlashcardDecks } from '../lib/flashcards';
+import { v4 as uuidv4 } from 'uuid';
 
 type FlashcardDeck = {
     id: string;
@@ -218,7 +219,7 @@ const Home = () => {
                                                     </div>
                                                 </div>
                                                 <div className="mt-auto pt-4 flex justify-between items-center">
-                                                    <Link to={`/flashcards/${deck.id}`}>
+                                                    <Link to={`/flashcards/${deck.id}/session/${uuidv4()}`}>
                                                         <Button variant="link" className="p-0 h-auto text-sm font-medium">
                                                             Study now
                                                         </Button>

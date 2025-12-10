@@ -74,9 +74,14 @@ export const FlashCard = ({
           <div className={`absolute w-full h-full backface-hidden bg-white rounded-xl shadow-md p-6 flex flex-col items-center justify-center ${
             isFlipped ? 'opacity-0' : 'opacity-100'
           }`}>
-            <Heading as="h2" variant="lg" className="text-center mb-4">
+            <Heading as="h2" variant="lg" className="text-center mb-2">
               {card.term}
             </Heading>
+            {!isFlipped && (
+              <p className="text-sm text-gray-500 italic text-center">
+                Tap to reveal definition
+              </p>
+            )}
             {isGameMode && (
               <div className="w-full max-w-xs mt-4 space-y-2">
                 <label htmlFor="answer" className="block text-sm font-medium text-gray-700 mb-1">
