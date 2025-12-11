@@ -45,6 +45,8 @@ const Flashcards = () => {
   const [isFlipped, setIsFlipped] = useState(false);
   const [answers, setAnswers] = useState<CardAnswers>({});
   const [isLoading, setIsLoading] = useState(true);
+  const [expandedCards, setExpandedCards] = useState<Record<string, boolean>>({});
+  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
   const hasAnswers = Object.keys(answers).length > 0;
 
   useEffect(() => {
@@ -110,6 +112,26 @@ const Flashcards = () => {
       right: values.filter(v => v === 'right').length,
       wrong: values.filter(v => v === 'wrong').length
     };
+  };
+
+  const getGroupedAnswers = () => {
+    const rightCards = flashcards.filter(card => answers[card.id] === 'right');
+    const wrongCards = flashcards.filter(card => answers[card.id] === 'wrong');
+    return { rightCards, wrongCards };
+  };
+
+  const toggleCardExpansion = (cardId: string) => {
+    setExpandedCards(prev => ({
+      ...prev,
+      [cardId]: !prev[cardId]
+    }));
+  };
+
+  const toggleSectionExpansion = (section: 'right' | 'wrong') => {
+    setExpandedSections(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }));
   };
 
   const stats = getAnswerStats();
@@ -189,8 +211,122 @@ const Flashcards = () => {
 
         {
           allCardsAnswered ? (
-            <div className="p-4 bg-green-50 text-green-700 rounded-lg mb-4 text-center">
-              🎉 You've completed all the cards in this deck!
+            <div className="space-y-6">
+              <div className="p-4 text-green-700 rounded-lg text-center">
+                🎉 You've completed all the cards in this deck!
+              </div>
+              
+              <div className="space-y-6">
+                {/* Right Answers */}
+                <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                  <button
+                    onClick={() => toggleSectionExpansion('right')}
+                    className="w-full text-left px-4 py-4 bg-green-50 hover:bg-green-100 transition-colors duration-200 flex items-center justify-between"
+                  >
+                    <div className="flex items-center">
+                      <div className="w-8 h-8 bg-green-100 text-green-800 rounded-full flex items-center justify-center mr-3">
+                        ✓
+                      </div>
+                      <h3 className="text-lg font-semibold text-green-800">
+                        Correct Answers ({stats.right})
+                      </h3>
+                    </div>
+                    <svg
+                      className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${expandedSections['right'] ? 'rotate-180' : ''}`}
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                  {expandedSections['right'] && (
+                    <div className="p-4 space-y-2">
+                      {getGroupedAnswers().rightCards.map((card) => (
+                        <div key={card.id} className="border border-gray-200 rounded-lg overflow-hidden">
+                          <button
+                            onClick={() => toggleCardExpansion(card.id)}
+                            className="w-full text-left px-4 py-3 bg-gray-50 hover:bg-gray-100 transition-colors duration-200 flex items-center justify-between"
+                          >
+                            <span className="font-medium text-gray-900">{card.term}</span>
+                            <svg
+                              className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${expandedCards[card.id] ? 'rotate-180' : ''}`}
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                          </button>
+                          {expandedCards[card.id] && (
+                            <div className="px-4 py-3 bg-white border-t border-gray-200">
+                              <div className="text-sm text-gray-600">{card.definition}</div>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                      {stats.right === 0 && (
+                        <div className="text-gray-500 italic">No correct answers</div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Wrong Answers */}
+                <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                  <button
+                    onClick={() => toggleSectionExpansion('wrong')}
+                    className="w-full text-left px-4 py-4 bg-red-50 hover:bg-red-100 transition-colors duration-200 flex items-center justify-between"
+                  >
+                    <div className="flex items-center">
+                      <div className="w-8 h-8 bg-red-100 text-red-800 rounded-full flex items-center justify-center mr-3">
+                        ✗
+                      </div>
+                      <h3 className="text-lg font-semibold text-red-800">
+                        Incorrect Answers ({stats.wrong})
+                      </h3>
+                    </div>
+                    <svg
+                      className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${expandedSections['wrong'] ? 'rotate-180' : ''}`}
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                  {expandedSections['wrong'] && (
+                    <div className="p-4 space-y-2">
+                      {getGroupedAnswers().wrongCards.map((card) => (
+                        <div key={card.id} className="border border-gray-200 rounded-lg overflow-hidden">
+                          <button
+                            onClick={() => toggleCardExpansion(card.id)}
+                            className="w-full text-left px-4 py-3 bg-gray-50 hover:bg-gray-100 transition-colors duration-200 flex items-center justify-between"
+                          >
+                            <span className="font-medium text-gray-900">{card.term}</span>
+                            <svg
+                              className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${expandedCards[card.id] ? 'rotate-180' : ''}`}
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                          </button>
+                          {expandedCards[card.id] && (
+                            <div className="px-4 py-3 bg-white border-t border-gray-200">
+                              <div className="text-sm text-gray-600">{card.definition}</div>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                      {stats.wrong === 0 && (
+                        <div className="text-gray-500 italic">No incorrect answers</div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           )
             : (

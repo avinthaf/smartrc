@@ -11,6 +11,7 @@ import Flashcards from './pages/flashcards.tsx';
 import FlashcardsMaker from './pages/flashcards_make.tsx';
 import FlashcardsGame from './pages/flashcards_game.tsx';
 import AuthProvider from './providers/AuthProvider.tsx';
+import MyActivity from './pages/my_activity.tsx';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -24,6 +25,7 @@ createRoot(document.getElementById('root')!).render(
           <Route path="/flashcards/:deckId/session/:sessionId" element={<Flashcards />} />
           <Route path="/flashcards/make" element={<FlashcardsMaker />} />
           <Route path="/flashcards/game" element={<FlashcardsGame />} />
+          <Route path="/my-activity" element={<MyActivity />} />
         </Route>
       </Routes>
     </BrowserRouter>

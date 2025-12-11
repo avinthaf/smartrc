@@ -40,12 +40,12 @@ export const TopNavigation = ({
   // Memoize the search handler to prevent unnecessary re-renders
   const handleSearch = useCallback((query: string) => {
     setSearchQuery(query);
-    
+
     // Clear any existing timeout
     if (searchTimeoutRef.current) {
       clearTimeout(searchTimeoutRef.current);
     }
-    
+
     // Set a new timeout
     searchTimeoutRef.current = setTimeout(() => {
       onSearch(query);
