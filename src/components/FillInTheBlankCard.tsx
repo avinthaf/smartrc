@@ -27,18 +27,53 @@ export const FillInTheBlankCard = ({
     getCardStatus = () => null,
 }: FillInTheBlankCardProps) => {
     const [isFlipped, setIsFlipped] = useState(false);
+    const [userInputs, setUserInputs] = useState<string[]>([]);
+
+    // Parse the prompt to identify blanks and initialize user inputs
+    const parsePrompt = (prompt: string) => {
+        const parts = prompt.split('[blank]');
+        const blankCount = parts.length - 1;
+        
+        // Initialize user inputs if needed
+        if (userInputs.length !== blankCount) {
+            setUserInputs(new Array(blankCount).fill(''));
+        }
+        
+        return parts;
+    };
+
+    const promptParts = parsePrompt(card.prompt);
+
+    const handleInputChange = (index: number, value: string) => {
+        const newInputs = [...userInputs];
+        newInputs[index] = value;
+        setUserInputs(newInputs);
+    };
+
+    const handleSubmit = () => {
+        // Check if all blanks are filled
+        const allFilled = userInputs.every(input => input.trim() !== '');
+        if (allFilled) {
+            const newFlippedState = !isFlipped;
+            setIsFlipped(newFlippedState);
+            externalOnFlip();
+        }
+    };
 
     const handleFlip = () => {
-        const newFlippedState = !isFlipped;
-        setIsFlipped(newFlippedState);
-        externalOnFlip();
+        // Only allow flip if all blanks are filled or already flipped
+        const allFilled = userInputs.every(input => input.trim() !== '');
+        if (isFlipped || allFilled) {
+            const newFlippedState = !isFlipped;
+            setIsFlipped(newFlippedState);
+            externalOnFlip();
+        }
     };
 
     return (
         <div className="w-full">
             <div
-                className="relative w-full min-h-80 mb-8 cursor-pointer"
-                onClick={handleFlip}
+                className="relative w-full min-h-80 mb-8"
             >
                 <div className="bg-white rounded-xl shadow-md p-6">
                     {!isFlipped ? (
@@ -48,16 +83,59 @@ export const FillInTheBlankCard = ({
                                 Fill in the Blank
                             </Heading>
                             <div className="text-lg text-gray-800 text-center font-medium mb-4">
-                                {card.prompt}
+                                {promptParts.map((part, index) => (
+                                    <span key={index}>
+                                        {part}
+                                        {index < promptParts.length - 1 && (
+                                            <input
+                                                type="text"
+                                                value={userInputs[index] || ''}
+                                                onChange={(e) => handleInputChange(index, e.target.value)}
+                                                className="inline-block mx-1 px-2 py-1 w-32 border-b-2 border-blue-500 text-center focus:outline-none focus:border-blue-700 bg-blue-50"
+                                                placeholder="answer"
+                                                onClick={(e) => e.stopPropagation()}
+                                            />
+                                        )}
+                                    </span>
+                                ))}
                             </div>
-                            <p className="text-sm text-gray-500 italic text-center">
-                                Tap to reveal answers and explanation
-                            </p>
+                            <div className="mt-6 space-y-2">
+                                <p className="text-sm text-gray-500 italic text-center">
+                                    Fill in all blanks, then click submit to reveal answers
+                                </p>
+                                <Button
+                                    onClick={handleSubmit}
+                                    variant="default"
+                                    className="w-full max-w-xs"
+                                    disabled={!userInputs.every(input => input.trim() !== '')}
+                                >
+                                    Submit Answers
+                                </Button>
+                            </div>
                         </div>
                     ) : (
                         // Back of the card
                         <div className="space-y-4">
-                            {/* Answers Section */}
+                            {/* User's Answers Section */}
+                            <div>
+                                <Heading as="h3" variant="md" className="text-blue-700 mb-3">
+                                    Your Answers:
+                                </Heading>
+                                <div className="text-lg text-gray-800 text-center font-medium mb-4">
+                                    {promptParts.map((part, index) => (
+                                        <span key={index}>
+                                            {part}
+                                            {index < promptParts.length - 1 && (
+                                                <span className="inline-block mx-1 px-2 py-1 w-32 text-center bg-yellow-100 border border-yellow-300 rounded font-medium">
+                                                    {userInputs[index] || '______'}
+                                                </span>
+                                            )}
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Correct Answers Section */}
                             <div>
                                 <Heading as="h3" variant="md" className="text-green-700 mb-3">
                                     Possible Answers:
@@ -111,6 +189,17 @@ export const FillInTheBlankCard = ({
                                     </Button>
                                 </div>
                             )}
+
+                            {/* Flip Back Button */}
+                            <div className="flex justify-center pt-2">
+                                <Button
+                                    onClick={handleFlip}
+                                    variant="outline"
+                                    className="text-gray-600 hover:bg-gray-100 hover:border-gray-300"
+                                >
+                                    Back to Question
+                                </Button>
+                            </div>
                         </div>
                     )}
                 </div>

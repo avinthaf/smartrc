@@ -192,7 +192,7 @@ const FillInTheBlanksDeck = () => {
     <div className="min-h-screen bg-gray-50 flex flex-col items-center p-6">
       <div className="w-full max-w-2xl">
         <div className="text-center mb-6">
-          <Heading as="h1" variant="xl" className="mb-6">{deck?.title}</Heading>
+          <Heading as="h1" variant="sm" className="mb-6">{deck?.title}</Heading>
 
           <div className="flex justify-between items-center mb-4">
             <div className="flex items-center space-x-2">
