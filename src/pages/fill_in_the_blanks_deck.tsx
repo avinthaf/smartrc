@@ -1,28 +1,30 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useOutletContext } from 'react-router';
+import { useOutletContext } from 'react-router';
 import { Heading } from '../components/Heading';
 import { Button } from '../components/Button';
-import { FlashCard } from '../components/FlashCard';
+import { FillInTheBlankCard } from '../components/FillInTheBlankCard';
 import { useParams } from 'react-router';
-import { createFlashcardDeckSession, createFlashcardScore, getFlashcardsByDeckId, getFlashcardScoresBySessionId } from '../lib/flashcards';
+import { createFillInBlankDeckSession, createFillInBlankScore, getFillInBlanksByDeckId, getFillInBlankScoresBySessionId } from '../lib/fill_in_blanks';
 
-type Flashcard = {
+type FillInBlank = {
   id: string;
-  term: string;
-  definition: string;
+  deck_id: string;
+  prompt: string;
+  answers: string[];
+  explanation: string;
 };
 
-type FlashcardDeck = {
+type FillInBlankDeck = {
   id: string;
   title: string;
-  description: string | null;
+  description: string;
   user_id: string | null;
   publish_status: string;
   created_at: string;
   updated_at: string;
 };
 
-type FlashcardDeckSession = {
+type FillInBlankDeckSession = {
   id: string;
   deck_id: string;
   user_id: string;
@@ -33,32 +35,30 @@ type FlashcardDeckSession = {
 type AnswerStatus = 'right' | 'wrong';
 type CardAnswers = Record<string, AnswerStatus>;
 
-const Flashcards = () => {
-  const navigate = useNavigate();
+const FillInTheBlanksDeck = () => {
   const { deckId, sessionId } = useParams();
   const { supabase } = useOutletContext<any>();
 
-  const [flashcards, setFlashcards] = useState<Flashcard[]>([]);
-  const [deck, setDeck] = useState<FlashcardDeck | null>(null);
-  const [deckSession, setDeckSession] = useState<FlashcardDeckSession | null>(null);
+  const [fillInBlanks, setFillInBlanks] = useState<FillInBlank[]>([]);
+  const [deck, setDeck] = useState<FillInBlankDeck | null>(null);
+  const [deckSession, setDeckSession] = useState<FillInBlankDeckSession | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   const [answers, setAnswers] = useState<CardAnswers>({});
   const [isLoading, setIsLoading] = useState(true);
   const [expandedCards, setExpandedCards] = useState<Record<string, boolean>>({});
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
-  const hasAnswers = Object.keys(answers).length > 0;
 
   useEffect(() => {
     if (deckId) {
       setIsLoading(true);
-      getFlashcardsByDeckId(supabase, deckId)
+      getFillInBlanksByDeckId(supabase, deckId)
         .then((data) => {
           setDeck(data.deck);
-          setFlashcards(data.flashcards);
+          setFillInBlanks(data.fill_in_blanks);
         })
         .catch((error) => {
-          console.error('Error fetching flashcards:', error);
+          console.error('Error fetching fill in blanks:', error);
         })
         .finally(() => {
           setIsLoading(false);
@@ -68,40 +68,40 @@ const Flashcards = () => {
 
   useEffect(() => {
     if (deckId && sessionId && !deckSession) {
-      createFlashcardDeckSession(supabase, deckId, sessionId)
+      createFillInBlankDeckSession(supabase, deckId, sessionId)
         .then((data) => {
           setDeckSession(data);
         })
         .catch((error) => {
-          console.error('Error creating flashcard deck session:', error);
+          console.error('Error creating fill in blank deck session:', error);
         });
     }
   }, [deckId, supabase, deckSession, sessionId]);
 
   useEffect(() => {
     if (sessionId && !deckSession) {
-      getFlashcardScoresBySessionId(supabase, sessionId)
+      getFillInBlankScoresBySessionId(supabase, sessionId)
         .then((scores) => {
           // Transform scores array into the answers state format
-          const answersMap = scores.reduce((acc: Record<string, 'right' | 'wrong'>, score: { card_id: string; score: number }) => {
-            acc[score.card_id] = score.score === 1 ? 'right' : 'wrong';
+          const answersMap = scores.reduce((acc: Record<string, 'right' | 'wrong'>, score: { fill_in_blank_id: string; score: number }) => {
+            acc[score.fill_in_blank_id] = score.score === 1 ? 'right' : 'wrong';
             return acc;
           }, {} as Record<string, 'right' | 'wrong'>);
           setAnswers(answersMap);
         })
         .catch((error) => {
-          console.error('Error fetching flashcard scores:', error);
+          console.error('Error fetching fill in blank scores:', error);
         });
     }
   }, [sessionId, supabase, deckSession]);
 
-  const handleAnswer = async (cardId: string, isCorrect: boolean) => {
+  const handleAnswer = async (fillInBlankId: string, isCorrect: boolean) => {
     setAnswers(prev => ({
       ...prev,
-      [cardId]: isCorrect ? 'right' : 'wrong'
+      [fillInBlankId]: isCorrect ? 'right' : 'wrong'
     }));
 
-    await createFlashcardScore(supabase, { cardId, score: isCorrect ? 1 : 0, sessionId: sessionId as string });
+    await createFillInBlankScore(supabase, { fillInBlankId, score: isCorrect ? 1 : 0, sessionId: sessionId as string });
     nextCard();
   };
 
@@ -115,8 +115,8 @@ const Flashcards = () => {
   };
 
   const getGroupedAnswers = () => {
-    const rightCards = flashcards.filter(card => answers[card.id] === 'right');
-    const wrongCards = flashcards.filter(card => answers[card.id] === 'wrong');
+    const rightCards = fillInBlanks.filter(card => answers[card.id] === 'right');
+    const wrongCards = fillInBlanks.filter(card => answers[card.id] === 'wrong');
     return { rightCards, wrongCards };
   };
 
@@ -136,8 +136,8 @@ const Flashcards = () => {
 
   const stats = getAnswerStats();
 
-  const currentCard = flashcards[currentIndex];
-  const totalCards = flashcards.length;
+  const currentCard = fillInBlanks[currentIndex];
+  const totalCards = fillInBlanks.length;
 
   // Reset isFlipped whenever currentIndex changes
   useEffect(() => {
@@ -172,7 +172,7 @@ const Flashcards = () => {
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading flashcards...</p>
+          <p className="mt-4 text-gray-600">Loading fill in the blanks...</p>
         </div>
       </div>
     );
@@ -182,7 +182,7 @@ const Flashcards = () => {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <p className="text-gray-600">No flashcards found in this deck.</p>
+          <p className="text-gray-600">No fill in the blanks found in this deck.</p>
         </div>
       </div>
     );
@@ -213,7 +213,7 @@ const Flashcards = () => {
           allCardsAnswered ? (
             <div className="space-y-6">
               <div className="p-4 text-green-700 rounded-lg text-center">
-                🎉 You've completed all the cards in this deck!
+                🎉 You've completed all the fill in the blanks in this deck!
               </div>
               
               <div className="space-y-6">
@@ -248,7 +248,7 @@ const Flashcards = () => {
                             onClick={() => toggleCardExpansion(card.id)}
                             className="w-full text-left px-4 py-3 bg-gray-50 hover:bg-gray-100 transition-colors duration-200 flex items-center justify-between"
                           >
-                            <span className="font-medium text-gray-900">{card.term}</span>
+                            <span className="font-medium text-gray-900">{card.prompt}</span>
                             <svg
                               className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${expandedCards[card.id] ? 'rotate-180' : ''}`}
                               fill="none"
@@ -260,7 +260,29 @@ const Flashcards = () => {
                           </button>
                           {expandedCards[card.id] && (
                             <div className="px-4 py-3 bg-white border-t border-gray-200">
-                              <div className="text-sm text-gray-600">{card.definition}</div>
+                              <div className="space-y-3">
+                                <div>
+                                  <div className="font-medium text-sm text-gray-700 mb-2">Answers:</div>
+                                  <div className="flex flex-wrap gap-2">
+                                    {card.answers.map((answer, index) => (
+                                      <span
+                                        key={index}
+                                        className="inline-flex items-center px-3 py-1 rounded-md text-sm font-medium bg-blue-100 text-blue-800 border border-blue-200"
+                                      >
+                                        {answer}
+                                      </span>
+                                    ))}
+                                  </div>
+                                </div>
+                                {card.explanation && (
+                                  <div className="pt-2 border-t border-gray-100">
+                                    <div className="font-medium text-sm text-gray-700 mb-2">Explanation:</div>
+                                    <div className="p-3 bg-gray-50 rounded-md text-sm text-gray-600 border border-gray-200">
+                                      {card.explanation}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
                             </div>
                           )}
                         </div>
@@ -303,7 +325,7 @@ const Flashcards = () => {
                             onClick={() => toggleCardExpansion(card.id)}
                             className="w-full text-left px-4 py-3 bg-gray-50 hover:bg-gray-100 transition-colors duration-200 flex items-center justify-between"
                           >
-                            <span className="font-medium text-gray-900">{card.term}</span>
+                            <span className="font-medium text-gray-900">{card.prompt}</span>
                             <svg
                               className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${expandedCards[card.id] ? 'rotate-180' : ''}`}
                               fill="none"
@@ -315,7 +337,29 @@ const Flashcards = () => {
                           </button>
                           {expandedCards[card.id] && (
                             <div className="px-4 py-3 bg-white border-t border-gray-200">
-                              <div className="text-sm text-gray-600">{card.definition}</div>
+                              <div className="space-y-3">
+                                <div>
+                                  <div className="font-medium text-sm text-gray-700 mb-2">Answers:</div>
+                                  <div className="flex flex-wrap gap-2">
+                                    {card.answers.map((answer, index) => (
+                                      <span
+                                        key={index}
+                                        className="inline-flex items-center px-3 py-1 rounded-md text-sm font-medium bg-blue-100 text-blue-800 border border-blue-200"
+                                      >
+                                        {answer}
+                                      </span>
+                                    ))}
+                                  </div>
+                                </div>
+                                {card.explanation && (
+                                  <div className="pt-2 border-t border-gray-100">
+                                    <div className="font-medium text-sm text-gray-700 mb-2">Explanation:</div>
+                                    <div className="p-3 bg-gray-50 rounded-md text-sm text-gray-600 border border-gray-200">
+                                      {card.explanation}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
                             </div>
                           )}
                         </div>
@@ -331,14 +375,13 @@ const Flashcards = () => {
           )
             : (
               <>
-                <FlashCard
+                <FillInTheBlankCard
                   key={`card-${currentIndex}`}  // This forces a remount when currentIndex changes
                   card={currentCard}
                   onAnswer={(isCorrect) => handleAnswer(currentCard.id, isCorrect)}
                   showAnswerButtons={true}
                   currentIndex={currentIndex}
                   totalCards={totalCards}
-                  isFlipped={isFlipped}
                   onFlip={toggleFlip}
                   getCardStatus={getCardStatus}
                 />
@@ -372,16 +415,10 @@ const Flashcards = () => {
               </>
             )
         }
-        {/* <Button
-            onClick={() => navigate('/flashcards/game')}
-            variant="default"
-          >
-            Create Game Room
-          </Button> */}
       </div>
     </div>
 
   );
 };
 
-export default Flashcards;
+export default FillInTheBlanksDeck;

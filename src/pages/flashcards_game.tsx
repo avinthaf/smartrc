@@ -6,35 +6,35 @@ import { FlashCard } from '../components/FlashCard';
 
 type Flashcard = {
   id: string;
-  title: string;
-  description: string;
+  term: string;
+  definition: string;
 };
 
 const flashcardData: Flashcard[] = [
   {
     id: '1',
-    title: 'Cell Biology',
-    description: 'The study of cell structure and function, and it revolves around the concept that the cell is the fundamental unit of life.'
+    term: 'Cell Biology',
+    definition: 'The study of cell structure and function, and it revolves around the concept that the cell is the fundamental unit of life.'
   },
   {
     id: '2',
-    title: 'Photosynthesis',
-    description: 'The process by which green plants and some other organisms use sunlight to synthesize foods with the help of chlorophyll.'
+    term: 'Photosynthesis',
+    definition: 'The process by which green plants and some other organisms use sunlight to synthesize foods with the help of chlorophyll.'
   },
   {
     id: '3',
-    title: 'Mitochondria',
-    description: 'The powerhouse of the cell, responsible for producing energy through cellular respiration.'
+    term: 'Mitochondria',
+    definition: 'The powerhouse of the cell, responsible for producing energy through cellular respiration.'
   },
   {
     id: '4',
-    title: 'DNA Replication',
-    description: 'The process by which a double-stranded DNA molecule is copied to produce two identical DNA molecules.'
+    term: 'DNA Replication',
+    definition: 'The process by which a double-stranded DNA molecule is copied to produce two identical DNA molecules.'
   },
   {
     id: '5',
-    title: 'Neuron Function',
-    description: 'Neurons transmit information through electrical and chemical signals, forming the basis of the nervous system.'
+    term: 'Neuron Function',
+    definition: 'Neurons transmit information through electrical and chemical signals, forming the basis of the nervous system.'
   }
 ];
 
