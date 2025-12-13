@@ -50,42 +50,44 @@ const Flashcards = () => {
                 ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                         {flashcardDecks.map((deck) => (
-                            <div
-                                key={deck.id}
-                                className="h-full flex flex-col bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow duration-200 cursor-pointer"
-                            >
-                                <div className="p-5 h-full flex flex-col">
-                                    <div className="flex justify-between items-start">
-                                        <div className="flex-1">
-                                            <h3 className="text-gray-900 font-medium text-lg leading-tight">{deck.title}</h3>
-                                            {deck.description && (
-                                                <p className="mt-2 text-gray-600 text-sm leading-relaxed line-clamp-2">
-                                                    {deck.description}
-                                                </p>
-                                            )}
-                                            {deck.categories && deck.categories.length > 0 && (
-                                                <div className="mt-3 flex flex-wrap gap-1">
-                                                    {deck.categories.map((category) => (
-                                                        <span
-                                                            key={category.id}
-                                                            className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
-                                                        >
-                                                            {category.name}
-                                                        </span>
-                                                    ))}
-                                                </div>
-                                            )}
+                            <Link className="cursor-pointer" to={`/flashcards/${deck.id}/session/${uuidv4()}`}>
+                                <div
+                                    key={deck.id}
+                                    className="h-full flex flex-col bg-white rounded-lg border border-gray-200 overflow-hidden  cursor-pointer"
+                                >
+                                    <div className="p-5 h-full flex flex-col">
+                                        <div className="flex justify-between items-start">
+                                            <div className="flex-1">
+                                                <h3 className="text-gray-900 font-medium text-lg leading-tight">{deck.title}</h3>
+                                                {deck.description && (
+                                                    <p className="mt-2 text-gray-600 text-sm leading-relaxed line-clamp-2">
+                                                        {deck.description}
+                                                    </p>
+                                                )}
+                                                {deck.categories && deck.categories.length > 0 && (
+                                                    <div className="mt-3 flex flex-wrap gap-1">
+                                                        {deck.categories.map((category) => (
+                                                            <span
+                                                                key={category.id}
+                                                                className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
+                                                            >
+                                                                {category.name}
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div className="mt-auto pt-4 flex justify-between items-center">
-                                        <Link to={`/flashcards/${deck.id}/session/${uuidv4()}`}>
+                                        <div className="mt-auto pt-4 flex justify-between items-center">
+
                                             <Button variant="link" className="p-0 h-auto text-sm font-medium">
                                                 Study now
                                             </Button>
-                                        </Link>
+
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+                            </Link>
                         ))}
                     </div>
                 )}

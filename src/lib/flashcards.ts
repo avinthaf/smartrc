@@ -117,23 +117,19 @@ export const createFlashcardScore = async (client: SupabaseClient<any, "public",
     return response.json();
 }
 
-export const CreateFlashCardsWithAI = async (client: SupabaseClient<any, "public", "public", any, any>, prompt: string) => {
+export const createFlashCardsWithAI = async (client: SupabaseClient<any, "public", "public", any, any>, prompt: string) => {
     const { data: { session } } = await client.auth.getSession();
     const accessToken = session?.access_token
 
-    const { CREATE_FLASHCARDS_SYSTEM_PROMPT } = await import('../ai_context/flashcards.context');
-
-    const fullPrompt = `${CREATE_FLASHCARDS_SYSTEM_PROMPT}\n\nUser prompt: ${prompt}`;
-
     try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/gen_ai/prompt`, {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/gen_ai/prompt/flashcards`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${accessToken}`,
             },
             body: JSON.stringify({
-                prompt: fullPrompt
+                prompt
             })
         });
 

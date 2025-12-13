@@ -3,8 +3,9 @@ import { useOutletContext } from "react-router";
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../components/Button';
 import { Heading } from '../components/Heading';
-import { Text } from '../components/Text';
-import { CreateFlashCardsWithAI } from '../lib/flashcards';
+import Input from '../components/Input';
+import TextArea from '../components/textarea';
+import { createFlashCardsWithAI } from '../lib/flashcards';
 
 // Bottom Sheet Component
 const BottomSheet = ({ isOpen, onClose, children }: { isOpen: boolean; onClose: () => void; children: React.ReactNode }) => {
@@ -22,7 +23,7 @@ const BottomSheet = ({ isOpen, onClose, children }: { isOpen: boolean; onClose: 
   // Animation variants
   const overlayVariants: any = {
     hidden: { opacity: 0 },
-    visible: { 
+    visible: {
       opacity: 1,
       transition: { duration: 0.1 }
     }
@@ -66,8 +67,8 @@ const BottomSheet = ({ isOpen, onClose, children }: { isOpen: boolean; onClose: 
             animate="visible"
             exit="hidden"
           />
-          <motion.div 
-            className={`fixed ${isMobile ? 'bottom-0 left-0 right-0 rounded-t-2xl' : 'top-0 right-0 h-full w-1/3 min-w-[400px]'} bg-white shadow-xl`}
+          <motion.div
+            className={`fixed ${isMobile ? 'bottom-0 left-0 right-0 rounded-t-2xl' : 'top-0 right-0 h-full w-1/3 min-w-[400px]'} bg-white border border-gray-200`}
             onClick={(e) => e.stopPropagation()}
             custom={isMobile}
             variants={sheetVariants}
@@ -78,7 +79,7 @@ const BottomSheet = ({ isOpen, onClose, children }: { isOpen: boolean; onClose: 
             <div className="p-6">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-medium text-gray-900">Generate Flashcards with AI</h3>
-                <button 
+                <button
                   onClick={onClose}
                   className="text-gray-400 hover:text-gray-500"
                 >
@@ -107,6 +108,7 @@ const FlashcardsMaker = () => {
   const { supabase } = useOutletContext<any>();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [category, setCategory] = useState('');
   const [cards, setCards] = useState<Flashcard[]>([
     { id: Date.now().toString(), term: '', definition: '' }
   ]);
@@ -153,36 +155,40 @@ const FlashcardsMaker = () => {
   const handleGenerateCards = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!aiPrompt.trim()) return;
-    
+
     setIsGenerating(true);
-    
+
     try {
-      const response = await CreateFlashCardsWithAI(supabase, aiPrompt);
+      const response = await createFlashCardsWithAI(supabase, aiPrompt);
       // console.log('AI Response:', response);
-      
+
       // Parse the JSON response to get flashcard data
       let flashcardsData;
       let aiTitle = '';
       let aiDescription = '';
+      let aiCategories = '';
       try {
         // The response is already parsed from the API call, so we need to extract the result field
         const parsedResponse = typeof response === 'string' ? JSON.parse(response) : response;
         const flashcardsString = parsedResponse.result;
-        
+
         if (!flashcardsString) {
           throw new Error('No result field found in AI response');
         }
-        
+
         flashcardsData = JSON.parse(flashcardsString);
-        
-        // Extract title and description from the AI response
+
+        // Extract title, description, and categories from the AI response
         aiTitle = parsedResponse.title || '';
         aiDescription = parsedResponse.description || '';
+        aiCategories = parsedResponse.categories && parsedResponse.categories.length > 0
+          ? parsedResponse.categories.join(', ')
+          : '';
       } catch (parseError) {
         console.error('Failed to parse AI response:', parseError);
         throw new Error('Invalid response format from AI');
       }
-      
+
       // Add the generated flashcards to the existing cards
       if (Array.isArray(flashcardsData) && flashcardsData.length > 0) {
         const newCards = flashcardsData.map((card: any) => ({
@@ -190,23 +196,26 @@ const FlashcardsMaker = () => {
           term: card.term || '',
           definition: card.definition || ''
         }));
-        
+
         // Always replace cards with AI-generated ones (override previous results)
         setCards(newCards);
-        
-        // Always set title and description from AI (override previous values)
+
+        // Always set title, description, and category from AI (override previous values)
         if (aiTitle) {
           setTitle(aiTitle);
         }
         if (aiDescription) {
           setDescription(aiDescription);
         }
+        if (aiCategories) {
+          setCategory(aiCategories);
+        }
       } else {
         // Empty result array indicates inappropriate content or invalid request
         console.warn('AI returned empty result - request may be inappropriate or invalid');
         throw new Error('Unable to generate flashcards for this request. Please try a different topic.');
       }
-      
+
     } catch (error) {
       console.error('Error generating flashcards:', error);
       // Show error message to user
@@ -223,50 +232,43 @@ const FlashcardsMaker = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-4 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen py-4 px-4 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto">
-        {/* <div className="text-center mb-8">
-          <Heading as="h1" variant="md">New Flashcard Set</Heading>
-          <Text className="mt-2 text-gray-600">
-            Add a title, description, and create your flashcards below.
-          </Text>
-        </div> */}
+        <div className=" mb-8">
+          <Heading as="h1" variant="sm">Create a new flashcard deck</Heading>
+        </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="bg-white shadow rounded-lg p-6">
-            <div className="mb-6">
-              <label htmlFor="title" className="block text-sm font-medium text-gray-700">
-                Title
-              </label>
-              <input
-                type="text"
-                id="title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
-                placeholder="Enter set title"
-                required
-              />
-            </div>
+          <div className="flex-col">
+            <Input
+              id="title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Title"
+              required
+              className="mb-2"
+            />
+            <TextArea
+              id="description"
+              rows={3}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Description"
+              className="mb-2"
+            />
+            <Input
+              id="category"
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              placeholder="Category (e.g., Biology, Mathematics, History)"
+            />
 
-            <div>
-              <label htmlFor="description" className="block text-sm font-medium text-gray-700">
-                Description
-              </label>
-              <textarea
-                id="description"
-                rows={3}
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
-                placeholder="Add a description for your flashcard set"
-              />
-            </div>
           </div>
 
           <div className="space-y-4">
             <div className="flex justify-between items-center">
-              <h2 className="text-lg font-medium text-gray-900">Flashcards</h2>
+              <div></div>
+              {/* <h2 className="text-lg font-medium text-gray-900">Flashcards</h2> */}
               <Button
                 type="button"
                 onClick={() => setIsBottomSheetOpen(true)}
@@ -280,13 +282,13 @@ const FlashcardsMaker = () => {
             {cards.length > 0 && (
               <div className="space-y-4">
                 {cards.map((card, index) => (
-                  <div 
-                    key={card.id} 
-                    className={`bg-white rounded-lg shadow-sm border p-4 ${index === activeCardIndex ? 'ring-2 ring-blue-500' : ''}`}
+                  <div
+                    key={card.id}
+                    className={`bg-white rounded-lg border border-gray-200 p-4 ${index === activeCardIndex ? 'ring-2 ring-blue-500' : ''}`}
                     onClick={() => setActiveCardIndex(index)}
                   >
                     <div className="flex justify-between items-start mb-4">
-                      <h3 className="text-sm font-medium text-gray-700">Card {index + 1}</h3>
+                      <h3 className="text-sm font-bold text-gray-700">{index + 1}</h3>
                       {cards.length > 1 && (
                         <button
                           type="button"
@@ -303,23 +305,20 @@ const FlashcardsMaker = () => {
 
                     <div className="space-y-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Term</label>
-                        <input
-                          type="text"
+                        <Input
+                          id={`term-${index}`}
                           value={card.term}
                           onChange={(e) => handleCardChange(index, 'term', e.target.value)}
-                          className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
-                          placeholder="Enter term"
+                          placeholder="Term"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Definition</label>
-                        <textarea
+                        <TextArea
+                          id={`definition-${index}`}
+                          rows={3}
                           value={card.definition}
                           onChange={(e) => handleCardChange(index, 'definition', e.target.value)}
-                          className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
-                          rows={3}
                           placeholder="Enter definition"
                         />
                       </div>
@@ -328,7 +327,7 @@ const FlashcardsMaker = () => {
                 ))}
               </div>
             )}
-            
+
             <div className="flex justify-center mt-4">
               <Button
                 type="button"
@@ -355,15 +354,12 @@ const FlashcardsMaker = () => {
         <BottomSheet isOpen={isBottomSheetOpen} onClose={() => setIsBottomSheetOpen(false)}>
           <form onSubmit={handleGenerateCards} className="space-y-4">
             <div>
-              <label htmlFor="ai-prompt" className="block text-sm font-medium text-gray-700 mb-1">
-                Describe what you want to learn
-              </label>
-              <textarea
+              <TextArea
                 id="ai-prompt"
+                // label="Describe what you want to learn"
                 rows={4}
                 value={aiPrompt}
                 onChange={(e) => setAiPrompt(e.target.value)}
-                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                 placeholder="e.g., Key concepts from World War II, Spanish vocabulary for beginners, etc."
                 disabled={isGenerating}
               />
@@ -371,8 +367,8 @@ const FlashcardsMaker = () => {
                 The AI will generate flashcards based on your description
               </p>
             </div>
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               className="w-full justify-center"
               disabled={!aiPrompt.trim() || isGenerating}
             >

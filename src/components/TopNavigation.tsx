@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router';
+import { Heading } from './Heading';
 
 interface TopNavigationProps {
   onToggleSidebar: () => void;
@@ -63,17 +64,21 @@ export const TopNavigation = ({
   };
 
   return (
-    <header className="bg-white shadow-sm">
+    <header className="bg-white border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
-        <button
-          className="md:hidden p-2 rounded-md text-gray-500 hover:text-gray-600 hover:bg-gray-100"
-          onClick={onToggleSidebar}
-        >
-          <span className="sr-only">Open sidebar</span>
-          <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
-        </button>
+        <div className="flex items-center">
+          <button
+            className="md:hidden p-2 rounded-md text-gray-500 hover:text-gray-600 hover:bg-gray-100 mr-4"
+            onClick={onToggleSidebar}
+          >
+            <span className="sr-only">Open sidebar</span>
+            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+          
+          <Heading as="h2" variant="lg" className="text-gray-800">Smartr</Heading>
+        </div>
 
         <div className="flex-1 md:ml-6">
           <form className="max-w-xl">
@@ -116,7 +121,7 @@ export const TopNavigation = ({
 
           {/* Dropdown menu */}
           {isDropdownOpen && (
-            <div className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-10">
+            <div className="origin-top-right absolute right-0 mt-2 w-48 rounded-md border border-gray-200 bg-white focus:outline-none z-10">
               <div className="py-1" role="menu" aria-orientation="vertical" aria-labelledby="user-menu">
                 <button
                   onClick={handleSignOutClick}

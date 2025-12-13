@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import Input from '../components/input';
+import Input from '../components/Input';
 import { Text, LinkText } from '../components/Text';
 import { Heading } from '../components/Heading';
 import { Button } from '../components/Button';
