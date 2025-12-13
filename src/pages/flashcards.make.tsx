@@ -1,8 +1,10 @@
-import { useState, useRef, type ChangeEvent, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import { useOutletContext } from "react-router";
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../components/Button';
 import { Heading } from '../components/Heading';
 import { Text } from '../components/Text';
+import { CreateFlashCardsWithAI } from '../lib/flashcards';
 
 // Bottom Sheet Component
 const BottomSheet = ({ isOpen, onClose, children }: { isOpen: boolean; onClose: () => void; children: React.ReactNode }) => {
@@ -99,10 +101,10 @@ interface Flashcard {
   id: string;
   term: string;
   definition: string;
-  imageUrl?: string;
 }
 
 const FlashcardsMaker = () => {
+  const { supabase } = useOutletContext<any>();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [cards, setCards] = useState<Flashcard[]>([
@@ -111,7 +113,6 @@ const FlashcardsMaker = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
   const [aiPrompt, setAiPrompt] = useState('');
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const [activeCardIndex, setActiveCardIndex] = useState(0);
 
   const handleAddCard = () => {
@@ -139,20 +140,6 @@ const FlashcardsMaker = () => {
     setCards(newCards);
   };
 
-  const handleImageUpload = (e: ChangeEvent<HTMLInputElement>, index: number) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    // In a real app, you would upload the file to a server and get a URL
-    // For now, we'll just create a local object URL
-    const imageUrl = URL.createObjectURL(file);
-    handleCardChange(index, 'imageUrl', imageUrl);
-  };
-
-  const triggerFileInput = () => {
-    fileInputRef.current?.click();
-  };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // Here you would typically save the flashcard set to your backend
@@ -163,36 +150,87 @@ const FlashcardsMaker = () => {
     });
   };
 
-  const handleGenerateCards = (e: React.FormEvent) => {
+  const handleGenerateCards = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!aiPrompt.trim()) return;
     
     setIsGenerating(true);
     
-    // Simulate API call
-    setTimeout(() => {
-      const newCards = [
-        { id: Date.now().toString(), term: 'Term 1', definition: 'Definition 1' },
-        { id: (Date.now() + 1).toString(), term: 'Term 2', definition: 'Definition 2' },
-        { id: (Date.now() + 2).toString(), term: 'Term 3', definition: 'Definition 3' },
-      ];
+    try {
+      const response = await CreateFlashCardsWithAI(supabase, aiPrompt);
+      // console.log('AI Response:', response);
       
-      setCards(prev => [...prev, ...newCards]);
+      // Parse the JSON response to get flashcard data
+      let flashcardsData;
+      let aiTitle = '';
+      let aiDescription = '';
+      try {
+        // The response is already parsed from the API call, so we need to extract the result field
+        const parsedResponse = typeof response === 'string' ? JSON.parse(response) : response;
+        const flashcardsString = parsedResponse.result;
+        
+        if (!flashcardsString) {
+          throw new Error('No result field found in AI response');
+        }
+        
+        flashcardsData = JSON.parse(flashcardsString);
+        
+        // Extract title and description from the AI response
+        aiTitle = parsedResponse.title || '';
+        aiDescription = parsedResponse.description || '';
+      } catch (parseError) {
+        console.error('Failed to parse AI response:', parseError);
+        throw new Error('Invalid response format from AI');
+      }
+      
+      // Add the generated flashcards to the existing cards
+      if (Array.isArray(flashcardsData) && flashcardsData.length > 0) {
+        const newCards = flashcardsData.map((card: any) => ({
+          id: card.id || Date.now().toString() + Math.random().toString(),
+          term: card.term || '',
+          definition: card.definition || ''
+        }));
+        
+        // Always replace cards with AI-generated ones (override previous results)
+        setCards(newCards);
+        
+        // Always set title and description from AI (override previous values)
+        if (aiTitle) {
+          setTitle(aiTitle);
+        }
+        if (aiDescription) {
+          setDescription(aiDescription);
+        }
+      } else {
+        // Empty result array indicates inappropriate content or invalid request
+        console.warn('AI returned empty result - request may be inappropriate or invalid');
+        throw new Error('Unable to generate flashcards for this request. Please try a different topic.');
+      }
+      
+    } catch (error) {
+      console.error('Error generating flashcards:', error);
+      // Show error message to user
+      if (error instanceof Error) {
+        alert(error.message);
+      } else {
+        alert('An error occurred while generating flashcards. Please try again.');
+      }
+    } finally {
       setIsGenerating(false);
       setAiPrompt('');
       setIsBottomSheetOpen(false);
-    }, 1500);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 py-4 px-4 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto">
-        <div className="text-center mb-8">
-          <Heading as="h1" variant="xl">Create New Flashcard Set</Heading>
+        {/* <div className="text-center mb-8">
+          <Heading as="h1" variant="md">New Flashcard Set</Heading>
           <Text className="mt-2 text-gray-600">
             Add a title, description, and create your flashcards below.
           </Text>
-        </div>
+        </div> */}
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="bg-white shadow rounded-lg p-6">
@@ -284,38 +322,6 @@ const FlashcardsMaker = () => {
                           rows={3}
                           placeholder="Enter definition"
                         />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Image (optional)
-                        </label>
-                        <input
-                          ref={fileInputRef}
-                          type="file"
-                          accept="image/*"
-                          onChange={(e) => handleImageUpload(e, index)}
-                          className="hidden"
-                        />
-                        <div className="mt-1 flex items-center">
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={triggerFileInput}
-                          >
-                            {card.imageUrl ? 'Change Image' : 'Upload Image'}
-                          </Button>
-                          {card.imageUrl && (
-                            <div className="ml-4 flex-shrink-0">
-                              <img
-                                className="h-10 w-10 rounded-md object-cover"
-                                src={card.imageUrl}
-                                alt=""
-                              />
-                            </div>
-                          )}
-                        </div>
                       </div>
                     </div>
                   </div>

@@ -97,7 +97,7 @@ export const createFlashcardDeckSession = async (client: SupabaseClient<any, "pu
     return response.json();
 }
 
-export const createFlashcardScore = async (client: SupabaseClient<any, "public", "public", any, any>, flashcardScore: {cardId: string, score: number, sessionId: string}) => {
+export const createFlashcardScore = async (client: SupabaseClient<any, "public", "public", any, any>, flashcardScore: { cardId: string, score: number, sessionId: string }) => {
     const { data: { session } } = await client.auth.getSession();
     const accessToken = session?.access_token
 
@@ -115,4 +115,36 @@ export const createFlashcardScore = async (client: SupabaseClient<any, "public",
     }
 
     return response.json();
+}
+
+export const CreateFlashCardsWithAI = async (client: SupabaseClient<any, "public", "public", any, any>, prompt: string) => {
+    const { data: { session } } = await client.auth.getSession();
+    const accessToken = session?.access_token
+
+    const { CREATE_FLASHCARDS_SYSTEM_PROMPT } = await import('../ai_context/flashcards.context');
+
+    const fullPrompt = `${CREATE_FLASHCARDS_SYSTEM_PROMPT}\n\nUser prompt: ${prompt}`;
+
+    try {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/gen_ai/prompt`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${accessToken}`,
+            },
+            body: JSON.stringify({
+                prompt: fullPrompt
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        return data.result;
+    } catch (error) {
+        console.error('Error creating flashcards with AI:', error);
+        throw error;
+    }
 }

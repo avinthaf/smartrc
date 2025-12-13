@@ -33,12 +33,12 @@ export const FillInTheBlankCard = ({
     const parsePrompt = (prompt: string) => {
         const parts = prompt.split('[blank]');
         const blankCount = parts.length - 1;
-        
+
         // Initialize user inputs if needed
         if (userInputs.length !== blankCount) {
             setUserInputs(new Array(blankCount).fill(''));
         }
-        
+
         return parts;
     };
 

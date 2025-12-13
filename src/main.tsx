@@ -8,7 +8,7 @@ import Login from './pages/login.tsx';
 import Signup from './pages/signup.tsx';
 import Interests from './pages/interests.tsx';
 import FlashcardDeck from './pages/flashcards_deck.tsx';
-import FlashcardsMaker from './pages/flashcards_make.tsx';
+import FlashcardsMaker from './pages/flashcards.make.tsx';
 import FlashcardsGame from './pages/flashcards_game.tsx';
 import AuthProvider from './providers/AuthProvider.tsx';
 import MyActivity from './pages/my_activity.tsx';
