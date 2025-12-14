@@ -144,3 +144,23 @@ export const createFlashCardsWithAI = async (client: SupabaseClient<any, "public
         throw error;
     }
 }
+
+export const createFlashcardDeck = async (client: SupabaseClient<any, "public", "public", any, any>, deckData: { title: string, description: string, categoryIds: string[], flashcards: any[] }) => {
+    const { data: { session } } = await client.auth.getSession();
+    const accessToken = session?.access_token
+
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/flashcard-decks`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify(deckData),
+    });
+
+    if (!response.ok) {
+        throw new Error("Failed to create flashcard deck");
+    }
+
+    return response.json();
+}

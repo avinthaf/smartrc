@@ -1,25 +1,14 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState } from 'react';
 import { useOutletContext } from "react-router";
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../components/Button';
 import { Heading } from '../components/Heading';
 import Input from '../components/Input';
-import TextArea from '../components/textarea';
-import { createFlashCardsWithAI } from '../lib/flashcards';
+import TextArea from '../components/TextArea';
+import { createFlashCardsWithAI, createFlashcardDeck } from '../lib/flashcards';
 
 // Bottom Sheet Component
 const BottomSheet = ({ isOpen, onClose, children }: { isOpen: boolean; onClose: () => void; children: React.ReactNode }) => {
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
   // Animation variants
   const overlayVariants: any = {
     hidden: { opacity: 0 },
@@ -30,12 +19,12 @@ const BottomSheet = ({ isOpen, onClose, children }: { isOpen: boolean; onClose: 
   };
 
   const sheetVariants = {
-    hidden: (isMobile: boolean) => ({
-      y: isMobile ? '100%' : '0',
-      x: isMobile ? '0' : '100%',
+    hidden: (_mobile: boolean) => ({
+      y: _mobile ? '100%' : '0',
+      x: _mobile ? '0' : '100%',
       opacity: 0
     }),
-    visible: (isMobile: boolean) => ({
+    visible: (_mobile: boolean) => ({
       y: 0,
       x: 0,
       opacity: 1,
@@ -45,9 +34,9 @@ const BottomSheet = ({ isOpen, onClose, children }: { isOpen: boolean; onClose: 
         stiffness: 400
       }
     }),
-    exit: (isMobile: boolean) => ({
-      y: isMobile ? '100%' : '0',
-      x: isMobile ? '0' : '100%',
+    exit: (_mobile: boolean) => ({
+      y: _mobile ? '100%' : '0',
+      x: _mobile ? '0' : '100%',
       opacity: 0,
       transition: {
         duration: 0.1
@@ -68,9 +57,9 @@ const BottomSheet = ({ isOpen, onClose, children }: { isOpen: boolean; onClose: 
             exit="hidden"
           />
           <motion.div
-            className={`fixed ${isMobile ? 'bottom-0 left-0 right-0 rounded-t-2xl' : 'top-0 right-0 h-full w-1/3 min-w-[400px]'} bg-white border border-gray-200`}
+            className={`fixed ${window.innerWidth < 768 ? 'bottom-0 left-0 right-0 rounded-t-2xl' : 'top-0 right-0 h-full w-1/3 min-w-[400px]'} bg-white border border-gray-200`}
             onClick={(e) => e.stopPropagation()}
-            custom={isMobile}
+            custom={window.innerWidth < 768}
             variants={sheetVariants}
             initial="hidden"
             animate="visible"
@@ -109,6 +98,7 @@ const FlashcardsMaker = () => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('');
+  const [categoryIds, setCategoryIds] = useState<string[]>([]);
   const [cards, setCards] = useState<Flashcard[]>([
     { id: Date.now().toString(), term: '', definition: '' }
   ]);
@@ -142,14 +132,45 @@ const FlashcardsMaker = () => {
     setCards(newCards);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Here you would typically save the flashcard set to your backend
-    console.log({
-      title,
-      description,
-      cards
-    });
+    
+    // Filter out empty flashcards and remove IDs for auto-generation
+    const validFlashcards = cards
+      .filter(card => card.term.trim() && card.definition.trim())
+      .map(({ term, definition }) => ({ term, definition }));
+    
+    if (!title.trim()) {
+      alert('Please enter a title for the flashcard deck');
+      return;
+    }
+    
+    if (validFlashcards.length === 0) {
+      alert('Please add at least one flashcard with term and definition');
+      return;
+    }
+
+    try {
+      const deckData = {
+        title: title.trim(),
+        description: description.trim(),
+        categoryIds: categoryIds,
+        flashcards: validFlashcards
+      };
+      
+      const result = await createFlashcardDeck(supabase, deckData);
+      console.log('Flashcard deck created successfully:', result);
+      
+      // You could redirect or show success message here
+      alert('Flashcard deck created successfully!');
+      
+      // Reset form or redirect as needed
+      // For example: window.location.href = '/flashcards';
+      
+    } catch (error) {
+      console.error('Error creating flashcard deck:', error);
+      alert('Failed to create flashcard deck. Please try again.');
+    }
   };
 
   const handleGenerateCards = async (e: React.FormEvent) => {
@@ -160,30 +181,97 @@ const FlashcardsMaker = () => {
 
     try {
       const response = await createFlashCardsWithAI(supabase, aiPrompt);
-      // console.log('AI Response:', response);
-
+      console.log('Raw AI API Response:', response);
+      
       // Parse the JSON response to get flashcard data
       let flashcardsData;
       let aiTitle = '';
       let aiDescription = '';
       let aiCategories = '';
       try {
-        // The response is already parsed from the API call, so we need to extract the result field
-        const parsedResponse = typeof response === 'string' ? JSON.parse(response) : response;
-        const flashcardsString = parsedResponse.result;
-
-        if (!flashcardsString) {
-          throw new Error('No result field found in AI response');
+        console.log('Raw response type:', typeof response);
+        console.log('Raw response value:', response);
+        
+        // The response from createFlashCardsWithAI might be a string or object
+        let parsedResponse;
+        try {
+          if (typeof response === 'object' && response !== null) {
+            // Response is already parsed as an object
+            parsedResponse = response;
+          } else if (typeof response === 'string') {
+            // Response is a string that needs parsing
+            // First, try to parse it directly
+            try {
+              parsedResponse = JSON.parse(response);
+            } catch (firstParseError) {
+              console.log('Direct parse failed, cleaning string...');
+              // If direct parse fails, clean the string and try again
+              let cleanedResponse = response
+                .replace(/\\"/g, '"')  // Fix escaped quotes
+                .replace(/"\s+}/g, '"}')  // Fix spaces before closing brackets
+                .replace(/"\s+\]/g, '"]')  // Fix spaces before closing array brackets
+                .trim();
+              
+              console.log('Cleaned response:', cleanedResponse);
+              parsedResponse = JSON.parse(cleanedResponse);
+            }
+          } else {
+            throw new Error('Unexpected response type: ' + typeof response);
+          }
+        } catch (parseError) {
+          console.error('Failed to parse main response:', parseError);
+          console.error('Response that failed to parse:', response);
+          throw new Error('Invalid JSON response from API');
         }
-
-        flashcardsData = JSON.parse(flashcardsString);
+        
+        console.log('Parsed AI Response:', parsedResponse);
+        
+        // Check if result is a string or already parsed array
+        flashcardsData = parsedResponse.result;
+        if (typeof flashcardsData === 'string') {
+          console.log('Result is string, parsing...');
+          // Handle the escaped JSON string properly
+          try {
+            // First, try to parse as-is
+            flashcardsData = JSON.parse(flashcardsData);
+          } catch (firstError) {
+            console.log('First parse failed, cleaning and retrying...');
+            // If that fails, clean up the string and try again
+            let cleanedResult = flashcardsData
+              .replace(/\\"/g, '"')  // Fix escaped quotes
+              .replace(/"\s+}/g, '"}')  // Fix spaces before closing brackets
+              .replace(/"\s+\]/g, '"]')  // Fix spaces before closing array brackets
+              .trim();
+            
+            flashcardsData = JSON.parse(cleanedResult);
+          }
+        } else if (Array.isArray(flashcardsData)) {
+          console.log('Result is already an array');
+        } else {
+          console.log('Result is already parsed:', typeof flashcardsData);
+        }
 
         // Extract title, description, and categories from the AI response
         aiTitle = parsedResponse.title || '';
         aiDescription = parsedResponse.description || '';
-        aiCategories = parsedResponse.categories && parsedResponse.categories.length > 0
-          ? parsedResponse.categories.join(', ')
-          : '';
+        
+        // Handle new categories format: array of objects with id and name
+        if (parsedResponse.categories && parsedResponse.categories.length > 0) {
+          const categoryNames = parsedResponse.categories.map((cat: any) => cat.name).filter(Boolean);
+          const categoryIds = parsedResponse.categories.map((cat: any) => cat.id).filter(Boolean);
+          
+          // Validate that category IDs are valid UUIDs
+          const validCategoryIds = categoryIds.filter((id: string) => {
+            const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+            return uuidRegex.test(id);
+          });
+          
+          aiCategories = categoryNames.join(', ');
+          setCategoryIds(validCategoryIds);
+        } else {
+          aiCategories = '';
+          setCategoryIds([]);
+        }
       } catch (parseError) {
         console.error('Failed to parse AI response:', parseError);
         throw new Error('Invalid response format from AI');
