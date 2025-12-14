@@ -16,28 +16,34 @@ import MainLayout from './layouts/main.layout.tsx';
 import Flashcards from './pages/flashcards.index.tsx';
 import FillInBlanks from './pages/fill_in_the_blanks.index.tsx';
 import FillInTheBlanksDeck from './pages/fill_in_the_blanks_deck.tsx';
+import { ThemeProvider } from './theme/provider.tsx';
+import FillInBlanksMaker from './pages/fill_in_the_blanks.make.tsx';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
-      <Routes>
-        <Route element={<AuthProvider />}>
-          <Route element={<MainLayout />}>
-            <Route path="/" element={<App />} />
-            <Route path="/flashcards" element={<Flashcards />} />
-            <Route path="/flashcards/:deckId/session/:sessionId" element={<FlashcardDeck />} />
-            <Route path="/flashcards/make" element={<FlashcardsMaker />} />
-            <Route path="/flashcards/game" element={<FlashcardsGame />} />
+      <ThemeProvider>
+        <Routes>
+          <Route element={<AuthProvider />}>
+            <Route element={<MainLayout />}>
+              <Route path="/" element={<App />} />
+              <Route path="/flashcards" element={<Flashcards />} />
+              <Route path="/flashcards/:deckId/session/:sessionId" element={<FlashcardDeck />} />
+              <Route path="/flashcards/make" element={<FlashcardsMaker />} />
+              <Route path="/flashcards/game" element={<FlashcardsGame />} />
 
-            <Route path="/fill-in-the-blanks" element={<FillInBlanks />} />
-            <Route path="/fill-in-the-blanks/:deckId/session/:sessionId" element={<FillInTheBlanksDeck />} />
-            <Route path="/my-activity" element={<MyActivity />} />
+              <Route path="/fill-in-the-blanks" element={<FillInBlanks />} />
+              <Route path="/fill-in-the-blanks/:deckId/session/:sessionId" element={<FillInTheBlanksDeck />} />
+              <Route path="/fill-in-the-blanks/make" element={<FillInBlanksMaker />} />
+
+              <Route path="/my-activity" element={<MyActivity />} />
+            </Route>
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route path="/onboarding/interests" element={<Interests />} />
           </Route>
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/onboarding/interests" element={<Interests />} />
-        </Route>
-      </Routes>
+        </Routes>
+      </ThemeProvider>
     </BrowserRouter>
   </StrictMode>,
 )

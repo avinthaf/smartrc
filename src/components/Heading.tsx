@@ -1,4 +1,5 @@
 import type { ComponentProps } from 'react';
+import { cn } from '../lib/utils';
 
 type HeadingLevel = 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
 type HeadingVariant = 'xl' | 'lg' | 'md' | 'sm' | 'xs';
@@ -10,11 +11,11 @@ type HeadingProps = ComponentProps<'h1'> & {
 };
 
 const variantStyles: Record<HeadingVariant, string> = {
-  xl: 'text-4xl font-extrabold tracking-tight',
-  lg: 'text-3xl font-bold',
-  md: 'text-2xl font-semibold',
-  sm: 'text-xl font-medium',
-  xs: 'text-lg font-medium',
+  xl: 'text-4xl font-extrabold tracking-tight text-foreground',
+  lg: 'text-3xl font-bold text-foreground',
+  md: 'text-2xl font-semibold text-foreground',
+  sm: 'text-xl font-medium text-foreground',
+  xs: 'text-lg font-medium text-foreground',
 };
 
 export function Heading({
@@ -25,7 +26,7 @@ export function Heading({
 }: HeadingProps) {
   return (
     <Component
-      className={`text-gray-900 ${variantStyles[variant]} ${className}`}
+      className={cn(variantStyles[variant], className)}
       {...props}
     />
   );
