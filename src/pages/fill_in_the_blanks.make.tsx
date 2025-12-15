@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import type { ChangeEvent, MouseEvent } from 'react';
 import { useOutletContext } from "react-router";
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../components/Button';
@@ -58,7 +59,7 @@ const BottomSheet = ({ isOpen, onClose, children }: { isOpen: boolean; onClose: 
           />
           <motion.div
             className={`fixed ${window.innerWidth < 768 ? 'bottom-0 left-0 right-0 rounded-t-2xl' : 'top-0 right-0 h-full w-1/3 min-w-[400px]'} bg-white border border-gray-200`}
-            onClick={(e) => e.stopPropagation()}
+            onClick={(e: MouseEvent<HTMLDivElement>) => e.stopPropagation()}
             custom={window.innerWidth < 768}
             variants={sheetVariants}
             initial="hidden"
@@ -414,7 +415,7 @@ const FillInBlanksMaker = () => {
             <Input
               id="title"
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => setTitle(e.target.value)}
               placeholder="Title"
               required
               className="mb-2"
@@ -423,14 +424,14 @@ const FillInBlanksMaker = () => {
               id="description"
               rows={3}
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setDescription(e.target.value)}
               placeholder="Description"
               className="mb-2"
             />
             <Input
               id="category"
               value={category}
-              onChange={(e) => setCategory(e.target.value)}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => setCategory(e.target.value)}
               placeholder="Category (e.g., Grammar, Science, Mathematics)"
             />
 
@@ -462,7 +463,7 @@ const FillInBlanksMaker = () => {
                       {exercises.length > 1 && (
                         <button
                           type="button"
-                          onClick={(e) => {
+                          onClick={(e: MouseEvent<HTMLButtonElement>) => {
                             e.stopPropagation();
                             handleRemoveExercise(index);
                           }}
@@ -482,7 +483,7 @@ const FillInBlanksMaker = () => {
                           id={`prompt-${index}`}
                           rows={2}
                           value={exercise.prompt}
-                          onChange={(e) => handleExerciseChange(index, 'prompt', e.target.value)}
+                          onChange={(e: ChangeEvent<HTMLTextAreaElement>) => handleExerciseChange(index, 'prompt', e.target.value)}
                           placeholder="e.g., The capital of France is ___."
                         />
                       </div>
@@ -506,7 +507,7 @@ const FillInBlanksMaker = () => {
                             <Input
                               id={`answer-${index}-${answerIndex}`}
                               value={answer}
-                              onChange={(e) => handleAnswerChange(index, answerIndex, e.target.value)}
+                              onChange={(e: ChangeEvent<HTMLInputElement>) => handleAnswerChange(index, answerIndex, e.target.value)}
                               placeholder={`Answer ${answerIndex + 1}`}
                               className="flex-1"
                             />
@@ -531,7 +532,7 @@ const FillInBlanksMaker = () => {
                           id={`explanation-${index}`}
                           rows={2}
                           value={exercise.explanation || ''}
-                          onChange={(e) => handleExerciseChange(index, 'explanation', e.target.value)}
+                          onChange={(e: ChangeEvent<HTMLTextAreaElement>) => handleExerciseChange(index, 'explanation', e.target.value)}
                           placeholder="Optional explanation for the answer"
                         />
                       </div>
@@ -571,7 +572,7 @@ const FillInBlanksMaker = () => {
                 id="ai-prompt"
                 rows={4}
                 value={aiPrompt}
-                onChange={(e) => setAiPrompt(e.target.value)}
+                onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setAiPrompt(e.target.value)}
                 placeholder="e.g., Create fill-in-the-blanks exercises about world capitals, basic math operations, etc."
                 disabled={isGenerating}
               />

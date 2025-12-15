@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import type { ChangeEvent, MouseEvent } from 'react';
 import { useOutletContext } from "react-router";
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../components/Button';
@@ -58,7 +59,7 @@ const BottomSheet = ({ isOpen, onClose, children }: { isOpen: boolean; onClose: 
           />
           <motion.div
             className={`fixed ${window.innerWidth < 768 ? 'bottom-0 left-0 right-0 rounded-t-2xl' : 'top-0 right-0 h-full w-1/3 min-w-[400px]'} bg-white border border-gray-200`}
-            onClick={(e) => e.stopPropagation()}
+            onClick={(e: MouseEvent<HTMLDivElement>) => e.stopPropagation()}
             custom={window.innerWidth < 768}
             variants={sheetVariants}
             initial="hidden"
@@ -331,7 +332,7 @@ const FlashcardsMaker = () => {
             <Input
               id="title"
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => setTitle(e.target.value)}
               placeholder="Title"
               required
               className="mb-2"
@@ -340,14 +341,14 @@ const FlashcardsMaker = () => {
               id="description"
               rows={3}
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setDescription(e.target.value)}
               placeholder="Description"
               className="mb-2"
             />
             <Input
               id="category"
               value={category}
-              onChange={(e) => setCategory(e.target.value)}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => setCategory(e.target.value)}
               placeholder="Category (e.g., Biology, Mathematics, History)"
             />
 
@@ -380,7 +381,7 @@ const FlashcardsMaker = () => {
                       {cards.length > 1 && (
                         <button
                           type="button"
-                          onClick={(e) => {
+                          onClick={(e: MouseEvent<HTMLButtonElement>) => {
                             e.stopPropagation();
                             handleRemoveCard(index);
                           }}
@@ -396,7 +397,7 @@ const FlashcardsMaker = () => {
                         <Input
                           id={`term-${index}`}
                           value={card.term}
-                          onChange={(e) => handleCardChange(index, 'term', e.target.value)}
+                          onChange={(e: ChangeEvent<HTMLInputElement>) => handleCardChange(index, 'term', e.target.value)}
                           placeholder="Term"
                         />
                       </div>
@@ -406,7 +407,7 @@ const FlashcardsMaker = () => {
                           id={`definition-${index}`}
                           rows={3}
                           value={card.definition}
-                          onChange={(e) => handleCardChange(index, 'definition', e.target.value)}
+                          onChange={(e: ChangeEvent<HTMLTextAreaElement>) => handleCardChange(index, 'definition', e.target.value)}
                           placeholder="Enter definition"
                         />
                       </div>
@@ -447,7 +448,7 @@ const FlashcardsMaker = () => {
                 // label="Describe what you want to learn"
                 rows={4}
                 value={aiPrompt}
-                onChange={(e) => setAiPrompt(e.target.value)}
+                onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setAiPrompt(e.target.value)}
                 placeholder="e.g., Key concepts from World War II, Spanish vocabulary for beginners, etc."
                 disabled={isGenerating}
               />
