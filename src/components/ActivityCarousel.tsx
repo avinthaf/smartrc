@@ -49,7 +49,7 @@ const ActivityCarousel = ({ sessions }: ActivityCarouselProps) => {
             const width = window.innerWidth;
             if (width >= 1024) return { slidesPerView: 3, slideWidth: 'w-1/3' }; // Desktop
             if (width >= 768) return { slidesPerView: 2, slideWidth: 'w-1/2' }; // Tablet
-            return { slidesPerView: 2, slideWidth: 'w-1/2' }; // Mobile (changed from 1.5 to 2)
+            return { slidesPerView: 1.5, slideWidth: 'w-[60%]' }; // Mobile (1.5 slides with 40% peek)
         }
         return { slidesPerView: 3, slideWidth: 'w-1/3' }; // Default to desktop
     };
@@ -222,7 +222,12 @@ const ActivityCarousel = ({ sessions }: ActivityCarouselProps) => {
 
             <div className="relative">
                 {/* Carousel Container */}
-                <div className="overflow-hidden rounded-lg">
+                <div className="overflow-hidden rounded-lg relative">
+                    {/* Gradient overlay to indicate more content */}
+                    {allSlides.length > slidesConfig.slidesPerView && (
+                        <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white via-white/90 to-transparent z-10 pointer-events-none"></div>
+                    )}
+                    
                     <div 
                         ref={carouselRef}
                         className={`flex ${isAnimating ? 'transition-transform duration-300 ease-in-out' : ''} ${isDragging ? 'cursor-grabbing' : 'cursor-grab'} touch-none`}
