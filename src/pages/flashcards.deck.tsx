@@ -47,6 +47,8 @@ const FlashcardDeck = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [expandedCards, setExpandedCards] = useState<Record<string, boolean>>({});
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
+  const [rating, setRating] = useState<number>(0);
+  const [hasRated, setHasRated] = useState(false);
   const hasAnswers = Object.keys(answers).length > 0;
 
   useEffect(() => {
@@ -167,6 +169,40 @@ const FlashcardDeck = () => {
     setIsFlipped(!isFlipped);
   };
 
+  const handleRating = (newRating: number) => {
+    setRating(newRating);
+    setHasRated(true);
+  };
+
+  const StarRating = () => {
+    return (
+      <div className="flex flex-col items-center space-y-2">
+        <p className="text-lg font-medium text-gray-700">How would you rate this deck?</p>
+        <div className="flex space-x-1">
+          {[1, 2, 3, 4, 5].map((star) => (
+            <button
+              key={star}
+              onClick={() => handleRating(star)}
+              className="text-3xl transition-colors duration-200 hover:scale-110 focus:outline-none focus:scale-110"
+              disabled={hasRated}
+            >
+              {star <= (hasRated ? rating : 0) ? (
+                <span className="text-yellow-400">★</span>
+              ) : (
+                <span className="text-gray-300 hover:text-yellow-200">★</span>
+              )}
+            </button>
+          ))}
+        </div>
+        {hasRated && (
+          <p className="text-sm text-green-600 font-medium">
+            Thank you for rating! You gave {rating} star{rating !== 1 ? 's' : ''}.
+          </p>
+        )}
+      </div>
+    );
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -214,6 +250,11 @@ const FlashcardDeck = () => {
             <div className="space-y-6">
               <div className="p-4 text-green-700 rounded-lg text-center">
                 🎉 You've completed all the cards in this deck!
+              </div>
+              
+              {/* Rating Section */}
+              <div className="bg-white rounded-lg border border-gray-200 p-6">
+                <StarRating />
               </div>
               
               <div className="space-y-6">

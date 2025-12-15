@@ -7,7 +7,7 @@ import { BrowserRouter, Routes, Route } from 'react-router';
 import Login from './pages/login.tsx';
 import Signup from './pages/signup.tsx';
 import Interests from './pages/interests.tsx';
-import FlashcardDeck from './pages/flashcards_deck.tsx';
+import FlashcardDeck from './pages/flashcards.deck.tsx';
 import FlashcardsMaker from './pages/flashcards.make.tsx';
 import FlashcardsGame from './pages/flashcards_game.tsx';
 import AuthProvider from './providers/AuthProvider.tsx';
@@ -18,11 +18,13 @@ import FillInBlanks from './pages/fill_in_the_blanks.index.tsx';
 import FillInTheBlanksDeck from './pages/fill_in_the_blanks_deck.tsx';
 import { ThemeProvider } from './theme/provider.tsx';
 import FillInBlanksMaker from './pages/fill_in_the_blanks.make.tsx';
+import ScrollToTop from './components/ScrollToTop';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
       <ThemeProvider>
+        <ScrollToTop />
         <Routes>
           <Route element={<AuthProvider />}>
             <Route element={<MainLayout />}>

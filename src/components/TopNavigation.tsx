@@ -80,7 +80,7 @@ export const TopNavigation = ({
           <Heading as="h2" variant="lg" className="text-gray-800">Smartr</Heading>
         </div>
 
-        <div className="flex-1 md:ml-6">
+        {/* <div className="flex-1 md:ml-6">
           <form className="max-w-xl">
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -101,7 +101,7 @@ export const TopNavigation = ({
               />
             </div>
           </form>
-        </div>
+        </div> */}
 
         {/* Avatar and Dropdown */}
         <div className="ml-4 relative" ref={dropdownRef}>
