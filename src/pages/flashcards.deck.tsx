@@ -85,7 +85,7 @@ const FlashcardDeck = () => {
       getFlashcardScoresBySessionId(supabase, sessionId)
         .then((scores) => {
           // Transform scores array into the answers state format
-          const answersMap = scores.reduce((acc: Record<string, 'right' | 'wrong'>, score: { card_id: string; score: number }) => {
+          const answersMap = (scores || []).reduce((acc: Record<string, 'right' | 'wrong'>, score: { card_id: string; score: number }) => {
             acc[score.card_id] = score.score === 1 ? 'right' : 'wrong';
             return acc;
           }, {} as Record<string, 'right' | 'wrong'>);
@@ -93,6 +93,8 @@ const FlashcardDeck = () => {
         })
         .catch((error) => {
           console.error('Error fetching flashcard scores:', error);
+          // Set empty answers if scores fail to load
+          setAnswers({});
         });
     }
   }, [sessionId, supabase, deckSession]);
@@ -103,7 +105,12 @@ const FlashcardDeck = () => {
       [cardId]: isCorrect ? 'right' : 'wrong'
     }));
 
-    await createFlashcardScore(supabase, { cardId, score: isCorrect ? 1 : 0, sessionId: sessionId as string });
+    try {
+      await createFlashcardScore(supabase, { cardId, score: isCorrect ? 1 : 0, sessionId: sessionId as string });
+    } catch (error) {
+      console.error('Error creating flashcard score:', error);
+      // Continue with next card even if score creation fails
+    }
     nextCard();
   };
 

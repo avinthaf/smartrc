@@ -73,13 +73,13 @@ const Home = () => {
                 setFillInBlankDecks(fillInBlanksData);
 
                 // Create a map of deck_id to deck info for sessions
-                const deckMap = decksData.reduce((acc: Record<string, FlashcardDeck>, deck: FlashcardDeck) => {
+                const deckMap = (decksData || []).reduce((acc: Record<string, FlashcardDeck>, deck: FlashcardDeck) => {
                     acc[deck.id] = deck;
                     return acc;
                 }, {} as Record<string, FlashcardDeck>);
 
                 // Combine sessions with deck info and sort by most recent
-                const sessionsWithDecks = sessionsData
+                const sessionsWithDecks = (sessionsData || [])
                     .map((session: FlashcardDeckSession) => ({
                         ...session,
                         deck: deckMap[session.deck_id]
