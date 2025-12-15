@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { TopNavigation } from '../components/TopNavigation';
 import { Link, Outlet, useNavigate, useOutletContext } from 'react-router';
 import { signOut } from '../lib/auth';
-import { searchProductsByTags } from '../lib/search';
 
 const MainLayout = () => {
     const navigate = useNavigate();
@@ -10,11 +9,6 @@ const MainLayout = () => {
 
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
-    const handleSearch = (query: string) => {
-        console.log('Searching for:', query);
-        searchProductsByTags(supabase, query);
-
-    };
 
     const handleSignOut = async () => {
         try {
@@ -30,7 +24,6 @@ const MainLayout = () => {
             <div className="flex-1 flex flex-col overflow-hidden">
                 <TopNavigation
                     onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
-                    onSearch={handleSearch}
                     onSignOut={handleSignOut}
                     userInitial="U"
                 />

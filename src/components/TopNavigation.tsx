@@ -1,25 +1,19 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router';
+import { useState, useRef, useEffect } from 'react';
 import { Heading } from './Heading';
 
 interface TopNavigationProps {
   onToggleSidebar: () => void;
-  onSearch?: (query: string) => void;
   userInitial?: string;
   onSignOut?: () => Promise<void>;
 }
 
 export const TopNavigation = ({
   onToggleSidebar,
-  onSearch = () => { },
   userInitial = 'U',
   onSignOut = async () => { }
 }: TopNavigationProps) => {
-  const navigate = useNavigate();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -31,27 +25,9 @@ export const TopNavigation = ({
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
-      // Clean up any pending timeouts when component unmounts
-      if (searchTimeoutRef.current) {
-        clearTimeout(searchTimeoutRef.current);
-      }
     };
   }, []);
 
-  // Memoize the search handler to prevent unnecessary re-renders
-  const handleSearch = useCallback((query: string) => {
-    setSearchQuery(query);
-
-    // Clear any existing timeout
-    if (searchTimeoutRef.current) {
-      clearTimeout(searchTimeoutRef.current);
-    }
-
-    // Set a new timeout
-    searchTimeoutRef.current = setTimeout(() => {
-      onSearch(query);
-    }, 1000); // 1 second debounce
-  }, [onSearch]);
 
   const handleSignOutClick = async () => {
     try {

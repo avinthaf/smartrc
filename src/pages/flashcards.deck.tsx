@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useOutletContext } from 'react-router';
+import { useOutletContext } from 'react-router';
 import { Heading } from '../components/Heading';
 import { Button } from '../components/Button';
 import { FlashCard } from '../components/FlashCard';
@@ -34,7 +34,6 @@ type AnswerStatus = 'right' | 'wrong';
 type CardAnswers = Record<string, AnswerStatus>;
 
 const FlashcardDeck = () => {
-  const navigate = useNavigate();
   const { deckId, sessionId } = useParams();
   const { supabase } = useOutletContext<any>();
 
@@ -49,7 +48,6 @@ const FlashcardDeck = () => {
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
   const [rating, setRating] = useState<number>(0);
   const [hasRated, setHasRated] = useState(false);
-  const hasAnswers = Object.keys(answers).length > 0;
 
   useEffect(() => {
     if (deckId) {

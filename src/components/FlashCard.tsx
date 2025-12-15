@@ -33,7 +33,7 @@ export const FlashCard = ({
 }: FlashCardProps) => {
   const [answer, setAnswer] = useState('');
   const [hasSubmitted, setHasSubmitted] = useState(false);
-  const [isFlipped, setIsFlipped] = useState(false);
+  const [isFlipped, setIsFlipped] = useState(externalIsFlipped || false);
   const isGameMode = variant === 'game';
 
   const handleFlip = () => {
