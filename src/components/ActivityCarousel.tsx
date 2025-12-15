@@ -267,22 +267,22 @@ const ActivityCarousel = ({ sessions }: ActivityCarouselProps) => {
                                         <div className="h-full bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md transition-all duration-200 cursor-pointer group">
                                             <div className="flex flex-col h-full">
                                                 <div className="flex-1">
-                                                    <h3 className="text-lg font-semibold text-gray-900 group-hover:text-blue-700 transition-colors duration-200">
+                                                    <h3 className="text-lg font-semibold text-gray-900 group-hover:text-blue-700 transition-colors duration-200 line-clamp-2 break-words">
                                                         {session.deck.title}
                                                     </h3>
                                                     
                                                     {/* {session.deck.description && (
-                                                        <p className="text-gray-600 text-sm mb-3 line-clamp-2">
+                                                        <p className="text-gray-600 text-sm mb-3 line-clamp-2 break-words">
                                                             {session.deck.description}
                                                         </p>
                                                     )} */}
                                                     
                                                     <div className="flex items-center space-x-4 text-sm text-gray-500">
                                                         <div className="flex items-center space-x-1">
-                                                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                                             </svg>
-                                                            <span>{getRelativeTime(session.created_at)}</span>
+                                                            <span className="break-words">{getRelativeTime(session.created_at)}</span>
                                                         </div>
                                                     </div>
                                                 </div>
