@@ -62,34 +62,45 @@ const Home = () => {
     useEffect(() => {
         const loadData = async () => {
             try {
-                const [flashcardsData, fillInBlanksData, sessionsData, decksData] = await Promise.all([
+                // Load flashcards and fill-in-blanks independently
+                const [flashcardsData, fillInBlanksData] = await Promise.all([
                     getFlashcardDecks(supabase),
-                    getFillInBlankDecks(supabase),
-                    getFlashcardDeckSessionsByUserId(supabase),
-                    getFlashcardDecks(supabase)
+                    getFillInBlankDecks(supabase)
                 ]);
 
                 setFlashcardDecks(flashcardsData);
                 setFillInBlankDecks(fillInBlanksData);
 
-                // Create a map of deck_id to deck info for sessions
-                const deckMap = (decksData || []).reduce((acc: Record<string, FlashcardDeck>, deck: FlashcardDeck) => {
-                    acc[deck.id] = deck;
-                    return acc;
-                }, {} as Record<string, FlashcardDeck>);
+                // Load sessions independently (failure won't affect other data)
+                try {
+                    const [sessionsData, decksData] = await Promise.all([
+                        getFlashcardDeckSessionsByUserId(supabase),
+                        getFlashcardDecks(supabase)
+                    ]);
 
-                // Combine sessions with deck info and sort by most recent
-                const sessionsWithDecks = (sessionsData || [])
-                    .map((session: FlashcardDeckSession) => ({
-                        ...session,
-                        deck: deckMap[session.deck_id]
-                    }))
-                    .filter((session: SessionWithDeck) => session.deck) // Only include sessions with valid decks
-                    .sort((a: SessionWithDeck, b: SessionWithDeck) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+                    // Create a map of deck_id to deck info for sessions
+                    const deckMap = (decksData || []).reduce((acc: Record<string, FlashcardDeck>, deck: FlashcardDeck) => {
+                        acc[deck.id] = deck;
+                        return acc;
+                    }, {} as Record<string, FlashcardDeck>);
 
-                setSessions(sessionsWithDecks);
+                    // Combine sessions with deck info and sort by most recent
+                    const sessionsWithDecks = (sessionsData || [])
+                        .map((session: FlashcardDeckSession) => ({
+                            ...session,
+                            deck: deckMap[session.deck_id]
+                        }))
+                        .filter((session: SessionWithDeck) => session.deck) // Only include sessions with valid decks
+                        .sort((a: SessionWithDeck, b: SessionWithDeck) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+                    setSessions(sessionsWithDecks);
+                } catch (sessionError) {
+                    console.error('Error loading sessions:', sessionError);
+                    // Set empty sessions array so UI still works
+                    setSessions([]);
+                }
             } catch (error) {
-                console.error('Error loading data:', error);
+                console.error('Error loading main data:', error);
             } finally {
                 setLoading(false);
             }
