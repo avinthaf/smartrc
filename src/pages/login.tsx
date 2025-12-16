@@ -68,7 +68,7 @@ const Login = () => {
                     </div>
 
                     <div className="flex items-center justify-between">
-                        <div className="flex items-center">
+                        {/* <div className="flex items-center">
                             <input
                                 id="remember-me"
                                 name="remember-me"
@@ -78,10 +78,10 @@ const Login = () => {
                             <label htmlFor="remember-me" className="ml-2">
                                 <Text variant="small">Remember me</Text>
                             </label>
-                        </div>
+                        </div> */}
 
                         <div className="text-sm">
-                            <LinkText variant="small" href="#">
+                            <LinkText variant="small" href="/reset-password">
                                 Forgot your password?
                             </LinkText>
                         </div>
@@ -103,7 +103,7 @@ const Login = () => {
                     </Text>
                 </div>
 
-                <div className="mt-6">
+                {/* <div className="mt-6">
                     <div className="relative">
                         <div className="absolute inset-0 flex items-center">
                             <div className="w-full border-t border-gray-300"></div>
@@ -148,7 +148,7 @@ const Login = () => {
                             </a>
                         </div>
                     </div>
-                </div>
+                </div> */}
             </div>
         </div>
     );

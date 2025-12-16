@@ -6,7 +6,7 @@ import { getCurrentUser } from "../lib/auth";
 
 const supabase = createSupabaseClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_API_KEY);
 
-const unauthenticatedRoutes = ['/login', '/signup', 'forgot-password'];
+const unauthenticatedRoutes = ['/login', '/signup', '/reset-password', '/set-new-password'];
 
 const AuthProvider = () => {
     const navigate = useNavigate();

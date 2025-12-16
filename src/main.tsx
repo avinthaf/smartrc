@@ -6,6 +6,8 @@ import { BrowserRouter, Routes, Route } from 'react-router';
 
 import Login from './pages/login.tsx';
 import Signup from './pages/signup.tsx';
+import ResetPassword from './pages/reset-password.tsx';
+import SetNewPassword from './pages/set-new-password.tsx';
 import Interests from './pages/interests.tsx';
 import FlashcardDeck from './pages/flashcards.deck.tsx';
 import FlashcardsMaker from './pages/flashcards.make.tsx';
@@ -42,6 +44,8 @@ createRoot(document.getElementById('root')!).render(
             </Route>
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/set-new-password" element={<SetNewPassword />} />
             <Route path="/onboarding/interests" element={<Interests />} />
           </Route>
         </Routes>

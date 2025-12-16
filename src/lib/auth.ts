@@ -39,3 +39,15 @@ export const signUp = async (client: SupabaseClient<any, "public", "public", any
     }
     onSuccess(data);
 }
+
+export const resetPassword = async (client: SupabaseClient<any, "public", "public", any, any>, email: string, onSuccess: () => void, onError: (error: Error) => void) => {
+    const { error } = await client.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/set-new-password`
+    });
+
+    if (error) {
+        onError(error);
+        return;
+    }
+    onSuccess();
+}
