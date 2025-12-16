@@ -19,7 +19,28 @@ const AuthProvider = () => {
             setUser(user);
             setLoading(false);
         });
-    }, []);
+
+        // Listen for auth state changes
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+            if (event === 'SIGNED_IN' && session?.user) {
+                setUser(session.user);
+                setLoading(false);
+                // Redirect to home page after successful login
+                if (window.location.pathname === '/login' || window.location.pathname === '/signup') {
+                    navigate('/');
+                }
+            } else if (event === 'SIGNED_OUT') {
+                setUser(null);
+                setLoading(false);
+                // Redirect to login page after logout
+                if (!unauthenticatedRoutes.includes(window.location.pathname)) {
+                    navigate('/login');
+                }
+            }
+        });
+
+        return () => subscription.unsubscribe();
+    }, [navigate]);
 
     useEffect(() => {
         if (!user && !loading && !unauthenticatedRoutes.includes(window.location.pathname)) {
