@@ -5,6 +5,7 @@ import { Button } from '../components/Button';
 import { FlashCard } from '../components/FlashCard';
 import { useParams } from 'react-router';
 import { createFlashcardDeckSession, createFlashcardScore, getFlashcardsByDeckId, getFlashcardScoresBySessionId } from '../lib/flashcards';
+import { createProductRating } from '../lib/products';
 
 type Flashcard = {
   id: string;
@@ -154,12 +155,14 @@ const FlashcardDeck = () => {
   const nextCard = () => {
     if (currentIndex < totalCards - 1) {
       setCurrentIndex(prevIndex => prevIndex + 1);
+      setIsFlipped(false);
     }
   };
 
   const prevCard = () => {
     if (currentIndex > 0) {
       setCurrentIndex(prevIndex => prevIndex - 1);
+      setIsFlipped(false);
     }
   };
 
@@ -174,9 +177,18 @@ const FlashcardDeck = () => {
     setIsFlipped(!isFlipped);
   };
 
-  const handleRating = (newRating: number) => {
-    setRating(newRating);
-    setHasRated(true);
+  const handleRating = async (newRating: number) => {
+    try {
+      // Create product rating for the deck
+      await createProductRating(supabase, deckId as string, newRating);
+      setRating(newRating);
+      setHasRated(true);
+    } catch (error) {
+      console.error('Error creating product rating:', error);
+      // Still update UI even if API call fails
+      setRating(newRating);
+      setHasRated(true);
+    }
   };
 
   const StarRating = () => {
