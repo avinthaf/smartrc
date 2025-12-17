@@ -21,6 +21,7 @@ import FillInTheBlanksDeck from './pages/fill_in_the_blanks_deck.tsx';
 import { ThemeProvider } from './theme/provider.tsx';
 import FillInBlanksMaker from './pages/fill_in_the_blanks.make.tsx';
 import ScrollToTop from './components/ScrollToTop';
+import OnboardingInfo from './pages/onboarding.info.tsx';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -47,6 +48,7 @@ createRoot(document.getElementById('root')!).render(
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/set-new-password" element={<SetNewPassword />} />
             <Route path="/onboarding/interests" element={<Interests />} />
+            <Route path="/onboarding/info" element={<OnboardingInfo />} />
           </Route>
         </Routes>
       </ThemeProvider>
