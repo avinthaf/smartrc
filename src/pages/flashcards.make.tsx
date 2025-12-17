@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import type { ChangeEvent, MouseEvent } from 'react';
-import { useOutletContext } from "react-router";
+import { useNavigate, useOutletContext } from "react-router";
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../components/Button';
 import { Heading } from '../components/Heading';
 import Input from '../components/Input';
 import TextArea from '../components/TextArea';
 import { createFlashCardsWithAI, createFlashcardDeck } from '../lib/flashcards';
+import { v4 as uuidv4 } from 'uuid';
 
 // Bottom Sheet Component
 const BottomSheet = ({ isOpen, onClose, children }: { isOpen: boolean; onClose: () => void; children: React.ReactNode }) => {
@@ -96,6 +97,7 @@ interface Flashcard {
 
 const FlashcardsMaker = () => {
   const { supabase } = useOutletContext<any>();
+  const navigate = useNavigate();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('');
@@ -160,13 +162,10 @@ const FlashcardsMaker = () => {
       };
       
       const result = await createFlashcardDeck(supabase, deckData);
-      console.log('Flashcard deck created successfully:', result);
       
-      // You could redirect or show success message here
-      alert('Flashcard deck created successfully!');
       
       // Reset form or redirect as needed
-      // For example: window.location.href = '/flashcards';
+      navigate(`/flashcards/${result.id}/session/${uuidv4()}`)
       
     } catch (error) {
       console.error('Error creating flashcard deck:', error);
